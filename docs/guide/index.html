@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0c0f">
+<link rel="icon" href="data:,">
+<link rel="apple-touch-icon" href="../icon.png">
+<title>Guide — Vocal Lesson Kit</title>
+<style>
+:root{--bg:#0a0c0f;--panel:#12151a;--panel2:#191d24;--line:#252a33;--text:#e8ebf0;--muted:#8891a1;--accent:#4fd1c5;--accent2:#f6ad55}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Noto Sans KR",system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) 18px calc(env(safe-area-inset-bottom) + 40px);max-width:680px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:10px}
+header a{color:var(--muted);text-decoration:none;font-size:14px}
+select,button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px}
+h1{font-size:28px;line-height:1.25;margin:8px 0 6px}
+h2{font-size:19px;margin:30px 0 8px;padding-top:6px;border-top:1px solid var(--line);color:var(--accent)}
+h3{font-size:16px;margin:18px 0 4px}
+p,li{color:#cfd5de}
+ul,ol{padding-left:22px;margin:8px 0}
+li{margin:4px 0}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0}
+.box.warn{border-color:#5b4a2a}
+code,.k{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.92em}
+.msg{white-space:pre-wrap;font-size:15px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;color:var(--text)}
+button.copy{background:var(--accent);color:#06201d;border-color:var(--accent);font-weight:700}
+a{color:var(--accent)}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.toc a{border:1px solid var(--line);border-radius:999px;padding:6px 12px;text-decoration:none;font-size:14px;color:var(--text)}
+[data-l]{display:none}
+html[lang=ko] [data-l=ko],html[lang=ja] [data-l=ja],html[lang=en] [data-l=en]{display:block}
+</style>
+</head>
+<body>
+<header>
+  <a href="../">← Vocal Lesson Kit</a>
+  <select id="lang" aria-label="Language"><option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option></select>
+</header>
+<div data-l="ko">
+<h1>가이드</h1>
+<p>보컬 레슨용 도구 3가지(음정 분석기 · 연습 플레이어 · MR Studio)를 쓰는 방법이에요. 선생님은 <b>1~2번만</b> 읽어도 바로 쓸 수 있어요.</p>
+<div class="toc"><a href="#k-start">1. 시작하기</a><a href="#k-ana">2. 음정 분석기</a><a href="#k-play">3. 연습 플레이어</a><a href="#k-idea">4. 레슨 활용</a><a href="#k-fix">5. 문제 해결</a><a href="#k-send">6. 보내는 사람용</a></div>
+
+<h2 id="k-start">1. 시작하기 (iPhone)</h2>
+<ol>
+<li><b>Safari</b>로 받은 링크를 열어요. (LINE·카카오톡 앱 안의 브라우저에서는 마이크가 막힐 수 있어요. 오른쪽 아래 “Safari에서 열기”)</li>
+<li>공유 버튼(□↑) → <b>홈 화면에 추가</b>. 이후엔 앱처럼 아이콘으로 열려요.</li>
+<li>처음 마이크를 켤 때 나오는 <b>허용</b>을 눌러요. (실수로 거부했다면 5번 문제 해결 참고)</li>
+<li>이어폰을 꽂으면 반주와 목소리가 섞이지 않아 더 정확해요.</li>
+</ol>
+<div class="box">음성은 모두 기기 안에서만 처리되고 서버로 전송되지 않아요. 회원가입도 필요 없어요.</div>
+
+<h2 id="k-ana">2. 음정 분석기</h2>
+<h3>화면 보는 법</h3>
+<ul>
+<li><b>큰 글자</b>: 지금 내는 음(예: A3)과 기준음에서 얼마나 벗어났는지(센트, 100센트 = 반음). ±10센트 안이면 거의 정확해요.</li>
+<li><b>스펙트럼/그래프</b>: 목소리 높낮이의 흐름. 막대가 안정적일수록 음정이 흔들리지 않아요.</li>
+<li><b>음역 기록</b>: 낸 가장 낮은 음~가장 높은 음을 기억해요. 학생의 음역 파악에 좋아요.</li>
+<li>반응이 약하면 <b>감도 슬라이더</b>를 올려요(작은 소리까지 인식).</li>
+</ul>
+<h3>판정 모드 (남·녀 함께 쓸 때)</h3>
+<ul>
+<li>목표 음을 정하면 실시간으로 PERFECT / GREAT / GOOD / MISS를 판정해요.</li>
+<li><b>옥타브 무관</b>를 켜면 한 옥타브 위/아래로 불러도 같은 음으로 인정해요. 남녀가 같은 멜로디를 각자의 음역으로 부를 때 유용해요.</li>
+<li>프리셋은 여성/남성 그룹으로 나뉘어 있어요. 학생 목소리에 맞는 것을 골라요.</li>
+</ul>
+
+<h2 id="k-play">3. 연습 플레이어</h2>
+<ol>
+<li><b>음원 열기</b>: 파일 앱, iCloud Drive, 음성 메모, AirDrop으로 받은 파일 등에서 mp3 / m4a / wav를 골라요.</li>
+<li><b>키</b>: − / ＋ 로 반음 단위(±12)로 바꿔요. 원곡이 너무 높거나 낮을 때, 학생에게 맞는 키를 찾을 때 써요.</li>
+<li><b>템포</b>: 50~130%. 키는 그대로 두고 속도만 바뀌어요. 어려운 부분은 70%로 천천히.</li>
+<li><b>A–B 반복</b>: 재생하다가 시작 지점에서 [A], 끝 지점에서 [B]를 누르면 그 구간을 계속 반복해요. ±0.5초 버튼으로 미세 조정, 파형을 눌러서 위치 이동도 돼요.</li>
+</ol>
+<div class="box">반주(MR)가 필요하면 PC의 <b>MR Studio</b>로 곡에서 보컬을 지운 파일을 만들어 보내면 돼요. 키·템포·구간도 미리 정해서 만들 수 있어요.</div>
+
+<h2 id="k-idea">4. 레슨 활용 아이디어</h2>
+<ul>
+<li><b>음역 체크</b>: 분석기로 학생이 편하게 내는 가장 낮은 음~높은 음을 기록 → 연습 곡의 키를 정해요.</li>
+<li><b>키 맞추기</b>: 플레이어에서 반음씩 바꿔 가며 학생이 가장 편한 키를 찾아요.</li>
+<li><b>느리게 → 원속</b>: 어려운 프레이즈를 70% → 85% → 100%로 올려가며 A–B 반복.</li>
+<li><b>음정 시각화</b>: 같은 구절을 부르게 하고 분석기 화면을 같이 보며 어디서 흔들리는지 확인해요.</li>
+<li><b>게임처럼</b>: 판정 모드로 “GREAT 이상 5번 연속”처럼 목표를 정해요.</li>
+</ul>
+
+<h2 id="k-fix">5. 문제 해결</h2>
+<h3>마이크가 반응하지 않아요</h3>
+<ul>
+<li>LINE 등 앱 안의 브라우저가 아니라 <b>Safari</b>인지 확인해요.</li>
+<li>iPhone <b>설정 → Safari → 마이크</b>가 “허용” 또는 “확인”인지, 해당 사이트가 거부되어 있지 않은지 확인해요.</li>
+<li>분석기의 감도 슬라이더를 올려요. 조용한 곳에서 입을 마이크에 가까이.</li>
+</ul>
+<h3>소리가 안 나요</h3>
+<ul>
+<li>옆면의 <b>무음 스위치</b>(벨 모양)와 음량을 확인해요.</li>
+<li>화면을 한 번 눌러 재생을 시작해요(iPhone은 터치 후에만 소리가 나요).</li>
+</ul>
+<h3>파일이 열리지 않아요</h3>
+<ul><li>mp3 / m4a / wav로 시도해요. 아주 긴 파일(10분 이상)은 메모리 때문에 열리지 않을 수 있어요.</li></ul>
+<div class="box warn">저작권이 있는 음원은 개인 연습용으로만 사용해 주세요.</div>
+
+<h2 id="k-send">6. 보내는 사람용 (메시지 예시)</h2>
+<p>아래 문장을 그대로 LINE이나 메일로 보내면 돼요. 링크는 이 키트의 첫 화면 주소예요.</p>
+<div class="msg" id="msgJa"></div>
+<button class="copy" data-copy="msgJa">복사</button>
+</div>
+<div data-l="ja">
+<h1>ガイド</h1>
+<p>ボーカルレッスン用の3つのツール(音程アナライザー・練習プレーヤー・MR Studio)の使い方です。先生は<b>1〜2だけ</b>読めばすぐ使えます。</p>
+<div class="toc"><a href="#j-start">1. 使い始め</a><a href="#j-ana">2. 音程アナライザー</a><a href="#j-play">3. 練習プレーヤー</a><a href="#j-idea">4. レッスン活用</a><a href="#j-fix">5. 困ったとき</a><a href="#j-send">6. 送る人向け</a></div>
+
+<h2 id="j-start">1. 使い始め(iPhone)</h2>
+<ol>
+<li>届いたリンクを<b>Safari</b>で開きます。(LINEなどアプリ内ブラウザではマイクが使えないことがあります。右下の「Safariで開く」から)</li>
+<li>共有ボタン(□↑)→ <b>ホーム画面に追加</b>。次からはアプリのようにアイコンで開けます。</li>
+<li>初めてマイクを使うときに出る<b>許可</b>を押します。(誤って拒否した場合は5の「困ったとき」へ)</li>
+<li>イヤホンを使うと、伴奏と声が混ざらず、より正確に測れます。</li>
+</ol>
+<div class="box">音声はすべて端末の中だけで処理され、サーバーには送られません。会員登録も不要です。</div>
+
+<h2 id="j-ana">2. 音程アナライザー</h2>
+<h3>画面の見かた</h3>
+<ul>
+<li><b>大きな文字</b>:今出している音(例:A3)と、基準の音からのずれ(セント。100セント=半音)。±10セント以内ならほぼ正確です。</li>
+<li><b>スペクトラム/グラフ</b>:声の高さの流れ。安定しているほど音程が揺れていません。</li>
+<li><b>音域の記録</b>:出せた最低音〜最高音を覚えてくれます。生徒さんの音域把握に便利です。</li>
+<li>反応が弱いときは<b>感度スライダー</b>を上げます(小さな声まで拾います)。</li>
+</ul>
+<h3>判定モード(男女いっしょのとき)</h3>
+<ul>
+<li>目標の音を決めると、リアルタイムで PERFECT / GREAT / GOOD / MISS を判定します。</li>
+<li><b>オクターブ無関係</b>をオンにすると、1オクターブ上・下で歌っても同じ音として認めます。男女が同じ旋律をそれぞれの音域で歌うときに便利です。</li>
+<li>プリセットは女性/男性のグループに分かれています。生徒さんの声に合うものを選びます。</li>
+</ul>
+
+<h2 id="j-play">3. 練習プレーヤー</h2>
+<ol>
+<li><b>音源を開く</b>:ファイルApp、iCloud Drive、ボイスメモ、AirDropで受け取ったファイルなどから mp3 / m4a / wav を選びます。</li>
+<li><b>キー</b>:− / ＋ で半音ずつ(±12)変えます。原曲が高すぎ・低すぎるとき、生徒さんに合うキーを探すときに使います。</li>
+<li><b>テンポ</b>:50〜130%。キーはそのままで速度だけ変わります。難しい所は70%でゆっくり。</li>
+<li><b>A–Bリピート</b>:再生しながら始めたい所で[A]、終わりたい所で[B]を押すと、その区間を繰り返します。±0.5秒ボタンで微調整、波形をタップして位置を動かすこともできます。</li>
+</ol>
+<div class="box">伴奏(カラオケ音源)が必要なときは、PCの<b>MR Studio</b>で曲からボーカルを消したファイルを作って送れます。キー・テンポ・区間も先に決めて作れます。</div>
+
+<h2 id="j-idea">4. レッスンでの活用アイデア</h2>
+<ul>
+<li><b>音域チェック</b>:アナライザーで、生徒さんが楽に出せる最低音〜最高音を記録 → 練習曲のキーを決めます。</li>
+<li><b>キー合わせ</b>:プレーヤーで半音ずつ変えて、いちばん楽なキーを探します。</li>
+<li><b>ゆっくり → 原速</b>:難しいフレーズを70% → 85% → 100%と上げながらA–Bリピート。</li>
+<li><b>音程の見える化</b>:同じフレーズを歌ってもらい、アナライザーの画面を一緒に見て、どこで揺れるかを確認します。</li>
+<li><b>ゲーム感覚</b>:判定モードで「GREAT以上を5回連続」のような目標を作ります。</li>
+</ul>
+
+<h2 id="j-fix">5. 困ったとき</h2>
+<h3>マイクが反応しません</h3>
+<ul>
+<li>LINEなどのアプリ内ブラウザではなく<b>Safari</b>で開いているか確認します。</li>
+<li>iPhoneの<b>設定 → Safari → マイク</b>が「許可」または「確認」か、このサイトが拒否になっていないか確認します。</li>
+<li>アナライザーの感度スライダーを上げ、静かな場所でマイクに近づいて声を出します。</li>
+</ul>
+<h3>音が出ません</h3>
+<ul>
+<li>側面の<b>サイレントスイッチ</b>(ベルのマーク)と音量を確認します。</li>
+<li>画面を一度タップして再生を始めます(iPhoneはタップの後でないと音が出ません)。</li>
+</ul>
+<h3>ファイルが開けません</h3>
+<ul><li>mp3 / m4a / wav でお試しください。とても長いファイル(10分以上)はメモリの都合で開けないことがあります。</li></ul>
+<div class="box warn">著作権のある音源は、個人の練習用だけにお使いください。</div>
+
+<h2 id="j-send">6. 送る人向け(メッセージ例)</h2>
+<p>下の文章をそのままLINEやメールで送れます。リンクはこのキットのトップ画面のURLです。</p>
+<div class="msg" id="msgJa2"></div>
+<button class="copy" data-copy="msgJa2">コピー</button>
+</div>
+<div data-l="en">
+<h1>Guide</h1>
+<p>How to use the three tools for vocal lessons: pitch analyzer, practice player and MR Studio. A teacher only needs <b>sections 1 and 2</b> to get going.</p>
+<div class="toc"><a href="#e-start">1. Getting started</a><a href="#e-ana">2. Pitch analyzer</a><a href="#e-play">3. Practice player</a><a href="#e-idea">4. Lesson ideas</a><a href="#e-fix">5. Troubleshooting</a><a href="#e-send">6. For the sender</a></div>
+
+<h2 id="e-start">1. Getting started (iPhone)</h2>
+<ol>
+<li>Open the link in <b>Safari</b>. (In-app browsers such as LINE can block the microphone — use “Open in Safari”.)</li>
+<li>Tap Share (□↑) → <b>Add to Home Screen</b>. It will then open like an app.</li>
+<li>When the microphone is first requested, tap <b>Allow</b>. (If you denied it by mistake, see Troubleshooting.)</li>
+<li>Earphones keep the backing track out of the mic, which makes the readings more accurate.</li>
+</ol>
+<div class="box">Audio is processed only on your device and is never sent to a server. No sign-up needed.</div>
+
+<h2 id="e-ana">2. Pitch analyzer</h2>
+<h3>Reading the screen</h3>
+<ul>
+<li><b>Big text</b>: the note you are singing (e.g. A3) and how far it is from the reference (cents; 100 cents = one semitone). Within ±10 cents is nearly spot on.</li>
+<li><b>Spectrum / graph</b>: the flow of your pitch. A steadier line means steadier intonation.</li>
+<li><b>Range</b>: remembers the lowest and highest notes you hit — handy for finding a student's range.</li>
+<li>If it reacts weakly, raise the <b>sensitivity slider</b> to pick up quieter sounds.</li>
+</ul>
+<h3>Judge mode (mixed male and female voices)</h3>
+<ul>
+<li>Pick a target note and it grades you live: PERFECT / GREAT / GOOD / MISS.</li>
+<li>Turn on <b>octave-agnostic</b> so singing an octave higher or lower still counts. Useful when men and women sing the same melody in their own ranges.</li>
+<li>Presets are grouped into Female and Male. Choose the one that suits the student.</li>
+</ul>
+
+<h2 id="e-play">3. Practice player</h2>
+<ol>
+<li><b>Open audio</b>: pick an mp3 / m4a / wav from Files, iCloud Drive, Voice Memos or a file received via AirDrop.</li>
+<li><b>Key</b>: − / ＋ changes it in semitones (±12). Use it when the original is too high or low, or to find a student's comfortable key.</li>
+<li><b>Tempo</b>: 50–130%. Only the speed changes, not the key. Take hard passages at 70%.</li>
+<li><b>A–B loop</b>: while playing, tap [A] at the start and [B] at the end and that section repeats. Fine-tune with the ±0.5 s buttons, or tap the waveform to jump.</li>
+</ol>
+<div class="box">Need a backing track? Use <b>MR Studio</b> on a PC to remove the vocals from a song and send the file. Key, tempo and section can be set beforehand.</div>
+
+<h2 id="e-idea">4. Lesson ideas</h2>
+<ul>
+<li><b>Range check</b>: record the lowest and highest notes a student sings comfortably, then choose the key of the practice song.</li>
+<li><b>Find the key</b>: shift the player a semitone at a time to find the most comfortable key.</li>
+<li><b>Slow → full speed</b>: loop a hard phrase at 70% → 85% → 100%.</li>
+<li><b>See the pitch</b>: have the student sing a phrase and watch the analyzer together to spot where it wavers.</li>
+<li><b>Make it a game</b>: set goals in judge mode, such as “five GREAT or better in a row”.</li>
+</ul>
+
+<h2 id="e-fix">5. Troubleshooting</h2>
+<h3>The microphone does not respond</h3>
+<ul>
+<li>Check that you are in <b>Safari</b>, not an in-app browser such as LINE.</li>
+<li>On iPhone, open <b>Settings → Safari → Microphone</b> and make sure it is Allow or Ask, and that this site is not denied.</li>
+<li>Raise the sensitivity slider and sing close to the mic in a quiet place.</li>
+</ul>
+<h3>No sound</h3>
+<ul>
+<li>Check the <b>silent switch</b> (bell icon) on the side and the volume.</li>
+<li>Tap the screen once to start playback — iPhone only plays sound after a tap.</li>
+</ul>
+<h3>A file will not open</h3>
+<ul><li>Try mp3 / m4a / wav. Very long files (10 min or more) may not open because of memory.</li></ul>
+<div class="box warn">Use copyrighted audio for personal practice only.</div>
+
+<h2 id="e-send">6. For the sender (message template)</h2>
+<p>Send this text as-is by LINE or email. The link is the address of this kit's home page.</p>
+<div class="msg" id="msgJa3"></div>
+<button class="copy" data-copy="msgJa3">Copy</button>
+</div>
+<script>
+(function(){
+  var L=['ko','ja','en'],s='';try{s=localStorage.getItem('va_lang')||''}catch(e){}
+  if(L.indexOf(s)<0){var n=(navigator.language||'en').slice(0,2);s=L.indexOf(n)>=0?n:'en'}
+  var sel=document.getElementById('lang');
+  function set(l){document.documentElement.lang=l;sel.value=l;try{localStorage.setItem('va_lang',l)}catch(e){}}
+  sel.onchange=function(){set(sel.value)};set(s);
+  var url=new URL('../',location.href).href;
+  var MSG=`こんにちは!ボーカルレッスン用に、音程アナライザーと練習プレーヤーを作りました。
+インストール不要で、iPhoneのSafariで開くだけで使えます。
+
+${url}
+
+■ 使い方(1分)
+1. 上のリンクを Safari で開く(LINEの中ではなく Safari で)
+2. 共有ボタン →「ホーム画面に追加」
+3. 「音程アナライザー」でマイクを許可して、歌ってみる
+4. 「練習プレーヤー」で音源を開くと、キー・テンポ変更とA–Bリピートが使えます
+
+詳しい説明は、サイトの「ガイド」(日本語)にあります。
+感想や「こうなったらいいな」があれば、ぜひ教えてください!`;
+  ['msgJa','msgJa2','msgJa3'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=MSG});
+  document.querySelectorAll('button[data-copy]').forEach(function(b){
+    var orig=b.textContent;
+    b.onclick=function(){
+      var t=document.getElementById(b.dataset.copy).textContent;
+      var done=function(){b.textContent='✓';setTimeout(function(){b.textContent=orig},1500)};
+      if(navigator.clipboard)navigator.clipboard.writeText(t).then(done,done);else done();
+    };
+  });
+})();
+</script>
+</body>
+</html>

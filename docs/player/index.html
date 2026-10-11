@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Practice">
+<meta name="theme-color" content="#0a0c0f">
+<link rel="icon" href="data:,">
+<link rel="apple-touch-icon" href="../icon.png">
+<title>Practice Player</title>
+<style>
+:root{--bg:#0a0c0f;--panel:#12151a;--panel2:#191d24;--line:#252a33;--text:#e8ebf0;--muted:#8891a1;--dim:#4a515d;--accent:#4fd1c5;--accent2:#f6ad55;--bad:#fc8181;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Noto Sans KR",system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 24px);max-width:560px;margin:0 auto}
+header{display:flex;align-items:center;gap:8px;padding:12px 0}
+header h1{font-size:17px;margin:0;flex:1}
+select,button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px}
+button{cursor:pointer;touch-action:manipulation}
+button:active{background:#232932}
+button.accent{background:var(--accent);color:#06201d;border-color:var(--accent);font-weight:700}
+button.on{border-color:var(--accent);color:var(--accent)}
+button:disabled{opacity:.4}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.panel h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{flex:1}
+.row .fix{flex:0 0 auto}
+#fileBtn{width:100%;padding:14px}
+#fname{margin-top:8px;color:var(--muted);font-size:13px;word-break:break-all}
+#wave{width:100%;height:96px;display:block;background:var(--panel2);border-radius:10px;touch-action:none;cursor:pointer}
+.times{display:flex;justify-content:space-between;font:13px var(--mono);color:var(--muted);margin-top:6px}
+#play{width:100%;min-height:60px;font-size:19px;margin-top:10px}
+.big{font:700 26px var(--mono);text-align:center;min-width:0;flex:1 1 80px}
+.big small{display:block;font:12px -apple-system,system-ui,sans-serif;color:var(--muted);font-weight:400}
+.step{flex:0 0 52px;font-size:24px;min-height:52px;padding:8px 0}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px;margin:6px 0 0}
+.mini{font-size:13px;color:var(--muted);margin-top:6px}
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.abbox{background:var(--panel2);border-radius:10px;padding:8px 10px;text-align:center}
+.abbox b{font:700 18px var(--mono);display:block}
+.abbox .n{display:flex;gap:6px;margin-top:6px}
+.abbox .n button{flex:1;min-height:38px;padding:4px;font-size:13px}
+#msg{min-height:20px;color:var(--bad);font-size:13px;margin-top:6px}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{color:var(--accent);font-size:14px;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+footer{color:var(--dim);font-size:12px;margin-top:20px;text-align:center}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1 data-i="title">Practice Player</h1>
+  <select id="lang" aria-label="Language"><option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option></select>
+</header>
+
+<div class="panel">
+  <input type="file" id="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.aac,.ogg" hidden>
+  <button id="fileBtn" class="accent" data-i="open">Open audio</button>
+  <div id="fname" data-i="nofile"></div>
+  <div id="msg"></div>
+</div>
+
+<div class="panel">
+  <canvas id="wave"></canvas>
+  <div class="times"><span id="cur">0:00.0</span><span id="dur">0:00.0</span></div>
+  <button id="play" class="accent" disabled data-i="play">Play</button>
+  <div class="row" style="margin-top:8px">
+    <button id="back" class="fix" disabled>−5s</button>
+    <button id="restart" disabled data-i="restart">Start</button>
+    <button id="fwd" class="fix" disabled>+5s</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h2 data-i="key">Key</h2>
+  <div class="row">
+    <button class="step" id="kDn" aria-label="down">−</button>
+    <div class="big"><span id="kVal">0</span><small data-i="semi">semitones</small></div>
+    <button class="step" id="kUp" aria-label="up">＋</button>
+    <button class="fix" style="padding:8px 10px" id="kRst" data-i="reset">Reset</button>
+  </div>
+  <div class="mini" id="kHint"></div>
+</div>
+
+<div class="panel">
+  <h2 data-i="tempo">Tempo</h2>
+  <div class="row">
+    <button class="step" id="tDn" aria-label="slower">−</button>
+    <div class="big"><span id="tVal">100</span>%<small data-i="speed">speed (key unchanged)</small></div>
+    <button class="step" id="tUp" aria-label="faster">＋</button>
+    <button class="fix" style="padding:8px 10px" id="tRst" data-i="reset">Reset</button>
+  </div>
+  <input type="range" id="tRange" min="50" max="130" step="5" value="100">
+</div>
+
+<div class="panel">
+  <h2 data-i="loop">A–B loop</h2>
+  <div class="ab">
+    <div class="abbox"><span data-i="pointA">A</span><b id="aVal">--</b>
+      <div class="n"><button id="aM" disabled>−0.5</button><button id="aP" disabled>+0.5</button></div></div>
+    <div class="abbox"><span data-i="pointB">B</span><b id="bVal">--</b>
+      <div class="n"><button id="bM" disabled>−0.5</button><button id="bP" disabled>+0.5</button></div></div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button id="setA" disabled data-i="setA">Set A</button>
+    <button id="setB" disabled data-i="setB">Set B</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button id="loopT" disabled data-i="loopOff">Loop OFF</button>
+    <button id="loopC" class="fix" disabled data-i="clear">Clear</button>
+  </div>
+  <div class="mini" data-i="loopHelp"></div>
+</div>
+
+<div class="panel">
+  <h2 data-i="volume">Volume</h2>
+  <input type="range" id="vol" min="0" max="100" value="90">
+  <div class="mini" data-i="silent"></div>
+</div>
+
+<div class="panel">
+  <div class="links">
+    <a href="../analyzer/" data-i="toAnalyzer">Pitch analyzer</a>
+    <a href="../guide/" data-i="toGuide">Guide</a>
+    <a href="../" data-i="toHome">Home</a>
+  </div>
+</div>
+<footer>Perch Creative · audio is processed in your browser and never uploaded · SoundTouchJS (LGPL-2.1)</footer>
+
+<script type="module">
+import { SoundTouch, SimpleFilter } from './soundtouch.js';
+
+/* ---------- i18n ---------- */
+const I18N = {
+ ko:{title:'연습 플레이어',open:'음원 열기 (파일 선택)',nofile:'아직 음원이 없어요. 파일 앱·음성 메모·iCloud에서 고를 수 있어요.',loading:'불러오는 중…',decoding:'변환 중… (몇 초 걸릴 수 있어요)',
+  play:'▶ 재생',pause:'❚❚ 일시정지',restart:'처음으로',key:'키 (음정)',semi:'반음',reset:'초기화',tempo:'템포',speed:'속도 (키는 그대로)',
+  loop:'구간 반복 (A–B)',pointA:'시작 A',pointB:'끝 B',setA:'지금 위치를 A로',setB:'지금 위치를 B로',loopOn:'🔁 반복 ON',loopOff:'반복 OFF',clear:'해제',
+  loopHelp:'재생하다가 [A]에서 버튼을 누르고, 끝낼 곳에서 [B]를 누르면 그 구간만 계속 반복돼요. 파형을 눌러 위치를 옮길 수도 있어요.',
+  volume:'볼륨',silent:'iPhone: 소리가 안 나면 옆면의 무음 스위치(벨 모양)를 확인하세요.',
+  toAnalyzer:'음정 분석기',toGuide:'가이드',toHome:'처음 화면',
+  errDecode:'이 파일을 열 수 없어요. mp3 / m4a / wav 형식으로 시도해 주세요.',errBig:'파일이 너무 커서 열 수 없어요. 더 짧게 잘라서 시도해 주세요.',
+  hintKey:(s,)=>s===0?'원래 키':(s>0?`원곡보다 ${s}반음 높게`:`원곡보다 ${-s}반음 낮게`)},
+ ja:{title:'練習プレーヤー',open:'音源を開く(ファイル選択)',nofile:'まだ音源がありません。ファイルApp・ボイスメモ・iCloudから選べます。',loading:'読み込み中…',decoding:'変換中…(数秒かかることがあります)',
+  play:'▶ 再生',pause:'❚❚ 一時停止',restart:'最初へ',key:'キー(音程)',semi:'半音',reset:'リセット',tempo:'テンポ',speed:'速度(キーは変わりません)',
+  loop:'区間リピート(A–B)',pointA:'開始 A',pointB:'終了 B',setA:'今の位置をAに',setB:'今の位置をBに',loopOn:'🔁 リピート ON',loopOff:'リピート OFF',clear:'解除',
+  loopHelp:'再生しながら始めたい所で[A]、終わりたい所で[B]を押すと、その区間を繰り返します。波形をタップして位置を動かすこともできます。',
+  volume:'音量',silent:'iPhone:音が出ないときは、側面のサイレントスイッチ(ベルのマーク)を確認してください。',
+  toAnalyzer:'音程アナライザー',toGuide:'ガイド',toHome:'トップへ',
+  errDecode:'このファイルは開けません。mp3 / m4a / wav でお試しください。',errBig:'ファイルが大きすぎて開けません。短く切ってお試しください。',
+  hintKey:(s)=>s===0?'原曲のキー':(s>0?`原曲より${s}半音高く`:`原曲より${-s}半音低く`)},
+ en:{title:'Practice Player',open:'Open audio (choose a file)',nofile:'No audio yet. Pick one from Files, Voice Memos or iCloud.',loading:'Loading…',decoding:'Decoding… (can take a few seconds)',
+  play:'▶ Play',pause:'❚❚ Pause',restart:'To start',key:'Key (pitch)',semi:'semitones',reset:'Reset',tempo:'Tempo',speed:'speed (key unchanged)',
+  loop:'A–B loop',pointA:'Start A',pointB:'End B',setA:'Set A here',setB:'Set B here',loopOn:'🔁 Loop ON',loopOff:'Loop OFF',clear:'Clear',
+  loopHelp:'While playing, tap [A] where the section should start and [B] where it ends; it will repeat. You can also tap the waveform to jump.',
+  volume:'Volume',silent:'iPhone: if you hear nothing, check the silent switch (bell icon) on the side.',
+  toAnalyzer:'Pitch analyzer',toGuide:'Guide',toHome:'Home',
+  errDecode:'Could not open this file. Try mp3 / m4a / wav.',errBig:'The file is too large to open. Try a shorter one.',
+  hintKey:(s)=>s===0?'Original key':(s>0?`${s} semitone${s>1?'s':''} above the original`:`${-s} semitone${s<-1?'s':''} below the original`)}
+};
+let lang='en';
+try{lang=localStorage.getItem('va_lang')||''}catch(e){}
+if(!I18N[lang]){const n=(navigator.language||'en').slice(0,2);lang=I18N[n]?n:'en'}
+const $=id=>document.getElementById(id);
+let fileName='', playing=false;
+const t=(k,...a)=>{const v=I18N[lang][k];return typeof v==='function'?v(...a):v};
+function applyI18n(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const k=el.dataset.i; if(k==='play'||k==='loopOff') return; el.textContent=t(k)});
+  $('lang').value=lang;
+  $('play').textContent=t(playing?'pause':'play');
+  refreshLoopBtn(); $('kHint').textContent=t('hintKey',semis);
+  if(fileName) $('fname').textContent=fileName;
+  document.title=t('title');
+}
+$('lang').onchange=e=>{lang=e.target.value;try{localStorage.setItem('va_lang',lang)}catch(_){};applyI18n()};
+
+/* ---------- audio engine ---------- */
+class LoopSource{
+  constructor(buf){this.l=buf.getChannelData(0);this.r=buf.numberOfChannels>1?buf.getChannelData(1):this.l;this.n=buf.length;this.pos=0;this.loop=null}
+  extract(target,numFrames){
+    let i=0;
+    while(i<numFrames){
+      const lp=this.loop;
+      if(lp&&this.pos>=lp.b) this.pos=lp.a;
+      const end=lp?Math.min(lp.b,this.n):this.n;
+      if(this.pos>=end){ if(lp){this.pos=lp.a;continue} break }
+      const c=Math.min(numFrames-i,end-this.pos);
+      for(let k=0;k<c;k++){const p=this.pos+k,o=(i+k)*2;target[o]=this.l[p];target[o+1]=this.r[p]}
+      i+=c;this.pos+=c;
+    }
+    return i;
+  }
+}
+let ctx=null, gain=null, node=null, src=null, st=null, filter=null, buf=null, peaks=null;
+let semis=0, tempo=1, loopA=null, loopB=null, loopOn=false;
+const BS=4096, samples=new Float32Array(BS*2);
+
+function ensureCtx(){
+  if(ctx) return;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  ctx=new AC();
+  gain=ctx.createGain(); gain.gain.value=$('vol').value/100; gain.connect(ctx.destination);
+  window.__ctx=ctx; window.__gain=gain;
+}
+function iosUnlock(){
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback' }catch(e){}
+  // silent <audio> keeps iOS in "playback" mode so the mute switch does not silence Web Audio
+  if(!iosUnlock.el){
+    const a=document.createElement('audio'); a.setAttribute('playsinline','');
+    a.loop=true; a.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAABErAAABAAgAZGF0YQAAAAA=';
+    iosUnlock.el=a;
+  }
+  iosUnlock.el.play().catch(()=>{});
+}
+function buildGraph(){
+  if(node){node.onaudioprocess=null;try{node.disconnect()}catch(e){}}
+  src=new LoopSource(buf); st=new SoundTouch(); st.tempo=tempo; st.pitchSemitones=semis;
+  filter=new SimpleFilter(src,st);
+  node=ctx.createScriptProcessor(BS,2,2);
+  node.onaudioprocess=e=>{
+    if(!playing) return;
+    const L=e.outputBuffer.getChannelData(0), R=e.outputBuffer.getChannelData(1);
+    const n=filter.extract(samples,BS);
+    for(let i=0;i<n;i++){L[i]=samples[2*i];R[i]=samples[2*i+1]}
+    if(n===0) setTimeout(onEnded,0);
+  };
+  node.connect(gain);
+  applyLoop();
+}
+function onEnded(){ if(!playing) return; setPlaying(false); seekTo(0) }
+function curSec(){
+  if(!src) return 0;
+  const pend=filter.inputBuffer.frameCount+(filter.outputBuffer.frameCount-filter.outputBufferPosition)*tempo;
+  let p=src.pos-pend;
+  const lp=src.loop;
+  if(lp&&p<lp.a&&src.pos>=lp.a&&src.pos<=lp.b) p+=lp.b-lp.a;
+  if(p<0) p=0;
+  return Math.min(p,src.n)/buf.sampleRate;
+}
+function seekTo(sec){
+  if(!src) return;
+  src.pos=Math.max(0,Math.min(src.n-1,Math.round(sec*buf.sampleRate)));
+  filter.clear(); draw();
+}
+function setPlaying(p){
+  playing=p; $('play').textContent=t(p?'pause':'play');
+}
+function applyLoop(){
+  if(!src) return;
+  const sr=buf.sampleRate;
+  src.loop=(loopOn&&loopA!=null&&loopB!=null&&loopB-loopA>=0.2)?{a:Math.round(loopA*sr),b:Math.round(loopB*sr)}:null;
+}
+
+/* ---------- UI helpers ---------- */
+const fmt=s=>{s=Math.max(0,s);const m=Math.floor(s/60);return m+':'+(s-m*60).toFixed(1).padStart(4,'0')};
+function refreshLoopBtn(){
+  const b=$('loopT'); b.textContent=t(loopOn?'loopOn':'loopOff'); b.classList.toggle('on',loopOn);
+}
+function refreshAB(){
+  $('aVal').textContent=loopA==null?'--':fmt(loopA); $('bVal').textContent=loopB==null?'--':fmt(loopB);
+  const ready=loopA!=null&&loopB!=null&&loopB-loopA>=0.2;
+  $('loopT').disabled=!ready; $('loopC').disabled=loopA==null&&loopB==null;
+  ['aM','aP'].forEach(i=>$(i).disabled=loopA==null); ['bM','bP'].forEach(i=>$(i).disabled=loopB==null);
+  if(!ready&&loopOn){loopOn=false}
+  refreshLoopBtn(); applyLoop(); draw();
+}
+function setKey(v){semis=Math.max(-12,Math.min(12,v));$('kVal').textContent=(semis>0?'+':'')+semis;$('kHint').textContent=t('hintKey',semis);if(st)st.pitchSemitones=semis;}
+function setTempo(p){p=Math.max(50,Math.min(130,p));tempo=p/100;$('tVal').textContent=p;$('tRange').value=p;if(st)st.tempo=tempo;}
+$('kDn').onclick=()=>setKey(semis-1); $('kUp').onclick=()=>setKey(semis+1); $('kRst').onclick=()=>setKey(0);
+$('tDn').onclick=()=>setTempo(Math.round(tempo*100)-5); $('tUp').onclick=()=>setTempo(Math.round(tempo*100)+5); $('tRst').onclick=()=>setTempo(100);
+$('tRange').oninput=e=>setTempo(+e.target.value);
+$('vol').oninput=e=>{if(gain)gain.gain.value=e.target.value/100};
+
+$('setA').onclick=()=>{loopA=curSec();if(loopB!=null&&loopB<=loopA+0.2)loopB=null;refreshAB()};
+$('setB').onclick=()=>{const s=curSec();if(loopA==null){loopA=Math.max(0,s-4)} if(s-loopA<0.2)return;loopB=s;loopOn=true;refreshAB()};
+$('loopT').onclick=()=>{loopOn=!loopOn;refreshAB()};
+$('loopC').onclick=()=>{loopA=loopB=null;loopOn=false;refreshAB()};
+const nud=(w,d)=>{const dur=buf.duration;if(w==='a'){loopA=Math.max(0,Math.min(dur,loopA+d))}else{loopB=Math.max(0,Math.min(dur,loopB+d))}
+  if(loopA!=null&&loopB!=null&&loopB<loopA+0.2){if(w==='a')loopA=loopB-0.2;else loopB=loopA+0.2}refreshAB()};
+$('aM').onclick=()=>nud('a',-.5);$('aP').onclick=()=>nud('a',.5);$('bM').onclick=()=>nud('b',-.5);$('bP').onclick=()=>nud('b',.5);
+
+$('play').onclick=async()=>{
+  if(!buf) return;
+  ensureCtx(); iosUnlock();
+  if(ctx.state!=='running') await ctx.resume();
+  if(playing){setPlaying(false);return}
+  setPlaying(true); wake();
+};
+$('restart').onclick=()=>seekTo(loopOn&&loopA!=null?loopA:0);
+$('back').onclick=()=>seekTo(Math.max(0,curSec()-5));
+$('fwd').onclick=()=>seekTo(Math.min(buf.duration-0.1,curSec()+5));
+let wl=null; async function wake(){try{if(navigator.wakeLock)wl=await navigator.wakeLock.request('screen')}catch(e){}}
+
+/* ---------- file loading ---------- */
+$('fileBtn').onclick=()=>$('file').click();
+$('file').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  $('msg').textContent=''; setPlaying(false);
+  fileName=f.name; $('fname').textContent=t('decoding');
+  ['play','restart','back','fwd','setA','setB'].forEach(i=>$(i).disabled=true);
+  try{
+    ensureCtx();
+    const ab=await f.arrayBuffer();
+    buf=await new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej); if(p&&p.catch)p.catch(rej)});
+  }catch(err){
+    buf=null; $('fname').textContent=''; fileName='';
+    $('msg').textContent=t(/memory|alloc/i.test(String(err&&err.message))?'errBig':'errDecode'); return;
+  }
+  loopA=loopB=null; loopOn=false;
+  buildGraph(); computePeaks();
+  $('fname').textContent=fileName; $('dur').textContent=fmt(buf.duration);
+  ['play','restart','back','fwd','setA','setB'].forEach(i=>$(i).disabled=false);
+  refreshAB(); draw();
+};
+
+/* ---------- waveform ---------- */
+const cv=$('wave'), g=cv.getContext('2d');
+function computePeaks(){
+  const W=600, n=buf.length, step=Math.max(1,Math.floor(n/W)), d=buf.getChannelData(0);
+  peaks=new Float32Array(W);
+  for(let i=0;i<W;i++){let m=0;const s=i*step,e=Math.min(n,s+step);for(let j=s;j<e;j+=Math.max(1,step>>6)){const v=Math.abs(d[j]);if(v>m)m=v}peaks[i]=m}
+  let mx=0;for(const v of peaks)if(v>mx)mx=v; if(mx>0)for(let i=0;i<W;i++)peaks[i]/=mx;
+}
+function draw(){
+  const dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight;
+  if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  if(!buf||!peaks){g.fillStyle='#4a515d';g.fillRect(0,h/2-1,w,2);return}
+  const dur=buf.duration;
+  if(loopA!=null){const x1=loopA/dur*w,x2=(loopB!=null?loopB:loopA)/dur*w;g.fillStyle=loopOn?'rgba(79,209,197,.25)':'rgba(246,173,85,.18)';g.fillRect(x1,0,Math.max(2,x2-x1),h)}
+  const pos=curSec()/dur*w, N=peaks.length;
+  for(let x=0;x<w;x++){const v=peaks[Math.min(N-1,Math.floor(x/w*N))];const bh=Math.max(1,v*(h-10));g.fillStyle=x<pos?'#4fd1c5':'#6b7788';g.fillRect(x,(h-bh)/2,1,bh)}
+  g.fillStyle='#fff';g.fillRect(pos-1,0,2,h);
+  g.fillStyle='#f6ad55';
+  if(loopA!=null)g.fillRect(loopA/dur*w-1,0,2,h);
+  if(loopB!=null)g.fillRect(loopB/dur*w-1,0,2,h);
+}
+function seekFromEvent(e){
+  if(!buf) return;
+  const r=cv.getBoundingClientRect();
+  seekTo(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*buf.duration);
+}
+let drag=false;
+cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId);seekFromEvent(e)});
+cv.addEventListener('pointermove',e=>{if(drag)seekFromEvent(e)});
+cv.addEventListener('pointerup',()=>drag=false); cv.addEventListener('pointercancel',()=>drag=false);
+function tick(){
+  if(buf){$('cur').textContent=fmt(curSec());draw()}
+  requestAnimationFrame(tick);
+}
+addEventListener('resize',draw);
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='SELECT'&&e.target.tagName!=='INPUT'){e.preventDefault();$('play').click()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&playing)wake()});
+
+applyI18n(); setKey(0); setTempo(100); refreshAB(); tick();
+window.__player={get src(){return src},get filter(){return filter},get st(){return st},setKey,setTempo,seekTo,curSec,get playing(){return playing}};
+</script>
+</body>
+</html>

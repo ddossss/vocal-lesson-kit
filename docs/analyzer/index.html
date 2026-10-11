@@ -1,0 +1,1497 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pitch">
+<meta name="theme-color" content="#0a0c0f">
+<title>Vocal Analyzer</title>
+<style>
+:root{
+  --bg:#0a0c0f; --panel:#12151a; --panel2:#191d24; --line:#252a33;
+  --text:#e8ebf0; --muted:#8891a1; --dim:#4a515d;
+  --accent:#4fd1c5; --accent2:#f6ad55;
+  --good:#68d391; --warn:#f6e05e; --bad:#fc8181;
+  --low:#6b8cff; --mid:#4fd1c5; --high:#f6ad55;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo","Noto Sans JP",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.led{width:10px;height:10px;border-radius:50%;background:#30353e;transition:.2s;flex:none}
+.led.on{background:var(--good);box-shadow:0 0 12px var(--good)}
+h1{margin:0;font-size:14px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+.sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--text);
+  padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover:not(:disabled){border-color:#3a414d}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:#04211e;border-color:transparent;min-width:130px}
+.btn.primary.stop{background:var(--bad);color:#2b0707}
+.btn.rec.active{background:var(--bad);color:#2b0707;border-color:transparent}
+.btn.small{padding:7px 12px;font-size:12px}
+select,input[type=number]{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;max-width:100%}
+label.inline{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:1.55fr 1fr;gap:14px}
+.full{grid-column:1/-1}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* main readout */
+.readout{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;text-align:center}
+.note{font-size:clamp(76px,15vw,150px);font-weight:800;line-height:.95;letter-spacing:-.02em;transition:color .15s}
+.note .oct{font-size:.42em;font-weight:600;color:var(--muted);margin-left:4px}
+.note.idle{color:var(--dim)}
+.hz{font-family:var(--mono);font-size:clamp(22px,4vw,30px);color:var(--accent);margin-top:8px}
+.hz small{font-size:.55em;color:var(--muted)}
+.cents{font-family:var(--mono);font-size:15px;margin-top:4px;color:var(--muted)}
+.meter{position:relative;width:100%;max-width:540px;height:46px;margin-top:18px}
+.meter .track{position:absolute;left:0;right:0;top:14px;height:16px;border-radius:8px;
+  background:linear-gradient(90deg,rgba(252,129,129,.25),rgba(246,224,94,.18) 30%,rgba(104,211,145,.3) 45%,rgba(104,211,145,.3) 55%,rgba(246,224,94,.18) 70%,rgba(252,129,129,.25))}
+.meter .center{position:absolute;left:50%;top:6px;width:2px;height:32px;background:var(--text);opacity:.5;transform:translateX(-1px)}
+.meter .needle{position:absolute;top:4px;width:4px;height:36px;border-radius:2px;background:var(--good);
+  left:50%;transform:translateX(-2px);transition:left .08s linear,background .15s;box-shadow:0 0 10px currentColor;opacity:0}
+.meter .ticks{position:absolute;left:0;right:0;bottom:-14px;display:flex;justify-content:space-between;font:10px var(--mono);color:var(--dim)}
+.level{width:100%;max-width:540px;margin-top:30px}
+.bar{height:8px;border-radius:4px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--good),var(--warn) 75%,var(--bad));transition:width .06s}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:var(--muted)}
+.lvlbar{position:relative;overflow:visible}
+.lvlbar>i{border-radius:4px}
+.lvlbar>b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text);opacity:.8;left:0;transition:left .1s}
+.lvlhint{font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;text-align:left;line-height:1.5}
+.lvlhint.warn{color:var(--warn)}
+
+/* hold */
+.hold{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hold .box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+.hold .k{font-size:11px;color:var(--muted)}
+.hold .v{font-size:30px;font-weight:800;margin-top:4px}
+.hold .h{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.hold .up .v{color:var(--high)} .hold .down .v{color:var(--low)}
+.span{font-size:12px;color:var(--muted);margin-top:10px}
+
+/* voice range */
+.vrange{position:relative;height:30px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);margin-top:6px;overflow:hidden}
+.vrange .in{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,rgba(107,140,255,.35),rgba(79,209,197,.35),rgba(246,173,85,.35))}
+.vrange .mark{position:absolute;top:2px;bottom:2px;width:4px;border-radius:2px;background:#fff;transform:translateX(-2px);opacity:0;transition:left .08s linear}
+.vlabels{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--muted);margin-top:6px}
+.pos{font-size:15px;font-weight:600;margin-top:10px;line-height:1.5}
+
+/* canvases */
+canvas{display:block;width:100%;border-radius:10px;background:#0d1014}
+#hist{height:220px}
+#spec{height:260px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--muted);letter-spacing:0;text-transform:none}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+
+/* tools */
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:860px){.tools{grid-template-columns:1fr}}
+.toolrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+audio{width:100%;margin-top:12px;height:40px}
+.rectime{font-family:var(--mono);font-size:22px;margin-left:auto}
+.dots{display:flex;gap:8px;margin-top:14px}
+.dots i{width:22px;height:22px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);transition:background .05s}
+.dots i.on{background:var(--accent)}
+.dots i.on.acc{background:var(--accent2)}
+.bpm{font-family:var(--mono);font-size:30px;font-weight:700;min-width:70px;text-align:center}
+input[type=range]{accent-color:var(--accent);flex:1;min-width:120px}
+.hint{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.7}
+.err{color:var(--bad)}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:var(--panel2)}
+
+/* judge mode */
+.judge-ctrl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.judge-ctrl input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.judge-main{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:12px;margin-top:14px}
+@media (max-width:860px){.judge-main{grid-template-columns:1fr}}
+.jbox{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;min-height:140px;min-width:0}
+.jk{font-size:11px;letter-spacing:.12em;color:var(--muted)}
+.jtarget{font-size:56px;font-weight:800;line-height:1.05;margin-top:4px}
+.jdir{font-size:14px;font-weight:600;margin-top:8px;min-height:20px;line-height:1.5}
+.jprog{height:10px;border-radius:5px;background:#0d1014;border:1px solid var(--line);overflow:hidden;margin-top:10px}
+.jprog>i{display:block;height:100%;width:0;background:var(--accent);transition:width .05s linear}
+.jflash{font-size:clamp(36px,6vw,58px);font-weight:900;letter-spacing:.06em;color:var(--dim)}
+.jflash.pop{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:.2}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.jscore{font-size:56px;font-weight:800;font-family:var(--mono);line-height:1.05;margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{min-width:54px;padding:6px 8px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);text-align:center;font-size:13px;font-weight:700}
+.chip small{display:block;font:10px var(--mono);color:var(--muted);font-weight:400;margin-top:2px}
+.chip.cur{border-color:var(--text);box-shadow:0 0 0 1px var(--text)}
+.chip.perfect{background:rgba(104,211,145,.22);border-color:var(--good)}
+.chip.great{background:rgba(79,209,197,.2);border-color:var(--accent)}
+.chip.good{background:rgba(246,224,94,.16);border-color:var(--warn)}
+.chip.miss{background:rgba(252,129,129,.16);border-color:var(--bad)}
+
+/* guide overlay */
+.guide[hidden]{display:none}
+.guide{position:fixed;inset:0;z-index:50;background:rgba(5,6,8,.78);display:flex;justify-content:center;align-items:flex-start;overflow-y:auto;padding:16px}
+.guide-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:780px;padding:20px 22px 28px;margin:8px 0}
+.guide-head{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;background:var(--panel);padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.guide-head h2{margin:0;font-size:18px}
+.guide-body{font-size:14px;line-height:1.85;color:var(--text)}
+.guide-body h3{font-size:15px;margin:24px 0 8px;color:var(--accent)}
+.guide-body p{margin:8px 0}
+.guide-body ul,.guide-body ol{margin:8px 0;padding-left:1.4em}
+.guide-body li{margin:4px 0}
+.guide-body .note-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0;font-size:13px;color:var(--muted)}
+.guide-body table{border-collapse:collapse;width:100%;font-size:13px;margin:10px 0}
+.guide-body th,.guide-body td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+.guide-body th{background:var(--panel2);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="led" id="led"></div>
+      <div>
+        <h1>Vocal Pitch &amp; Frequency Analyzer</h1>
+        <div class="sub" id="status"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <select id="lang" aria-label="Language">
+        <option value="ko">한국어</option>
+        <option value="ja">日本語</option>
+        <option value="en">English</option>
+      </select>
+      <label class="inline"><span data-i18n="notation"></span>
+        <select id="notation">
+          <option value="abc" data-i18n="notation_abc"></option>
+          <option value="solfege" data-i18n="notation_solfege"></option>
+        </select>
+      </label>
+      <label class="inline">A4
+        <select id="a4">
+          <option>415</option><option>432</option><option selected>440</option>
+          <option>441</option><option>442</option><option>443</option>
+        </select> Hz
+      </label>
+      <button class="btn" id="guideBtn" data-i18n="guide"></button>
+      <button class="btn primary" id="micBtn"></button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Big readout -->
+    <section class="panel readout">
+      <div class="note idle" id="note">—</div>
+      <div class="hz" id="hz">— <small>Hz</small></div>
+      <div class="cents" id="cents"></div>
+      <div class="meter">
+        <div class="track"></div><div class="center"></div><div class="needle" id="needle"></div>
+        <div class="ticks"><span>-50</span><span>-25</span><span>0</span><span>+25</span><span>+50</span></div>
+      </div>
+      <div class="level">
+        <div class="row"><span data-i18n="level"></span><span id="lvlTxt">— dBFS</span></div>
+        <div class="bar lvlbar"><i id="lvl"></i><b id="gateMark"></b></div>
+        <div class="row" style="margin-top:12px"><span data-i18n="sens"></span><span id="gateTxt">—</span></div>
+        <input type="range" id="sens" min="0" max="100" value="70" style="width:100%">
+        <div class="lvlhint" id="lvlHint"></div>
+      </div>
+    </section>
+
+    <!-- Side -->
+    <div class="stack">
+      <section class="panel">
+        <div class="label"><span data-i18n="hold_title"></span> <button class="btn small" id="resetHold" data-i18n="reset"></button></div>
+        <div class="hold">
+          <div class="box up"><div class="k" data-i18n="max"></div><div class="v" id="maxN">—</div><div class="h" id="maxH">— Hz</div></div>
+          <div class="box down"><div class="k" data-i18n="min"></div><div class="v" id="minN">—</div><div class="h" id="minH">— Hz</div></div>
+        </div>
+        <div class="span" id="spanTxt"></div>
+      </section>
+
+      <section class="panel">
+        <div class="label"><span data-i18n="voice_title"></span>
+          <select id="voice">
+            <optgroup data-i18n-label="grp_female">
+              <option value="soprano" data-i18n="soprano"></option>
+              <option value="mezzo" data-i18n="mezzo"></option>
+              <option value="alto" data-i18n="alto"></option>
+            </optgroup>
+            <optgroup data-i18n-label="grp_male">
+              <option value="tenor" data-i18n="tenor" selected></option>
+              <option value="baritone" data-i18n="baritone"></option>
+              <option value="bass" data-i18n="bass"></option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="vrange"><div class="in" id="vIn"></div><div class="mark" id="vMark"></div></div>
+        <div class="vlabels"><span id="vLo">—</span><span id="vHi">—</span></div>
+        <div class="pos" id="vPos"></div>
+      </section>
+
+      <section class="panel">
+        <div class="label" data-i18n="formant_title"></div>
+        <div class="bar" style="height:12px"><i id="fmt" style="background:linear-gradient(90deg,var(--low),var(--mid),var(--high))"></i></div>
+        <div class="row" style="margin-top:8px"><span id="fmtTxt">—</span><span id="bandTxt"></span></div>
+      </section>
+    </div>
+
+    <!-- Judge mode -->
+    <section class="panel full">
+      <div class="label"><span data-i18n="j_title"></span> <span id="jStatus" style="letter-spacing:0;text-transform:none"></span></div>
+      <div class="judge-ctrl">
+        <select id="jMode">
+          <option value="single" data-i18n="j_mode_single"></option>
+          <option value="five" data-i18n="j_mode_five" selected></option>
+          <option value="scale" data-i18n="j_mode_scale"></option>
+          <option value="scale2" data-i18n="j_mode_scale2"></option>
+          <option value="arp" data-i18n="j_mode_arp"></option>
+        </select>
+        <label class="inline"><span data-i18n="j_root"></span> <select id="jRoot"></select></label>
+        <label class="inline"><span data-i18n="j_tol"></span>
+          <select id="jTol"><option value="10" data-i18n="tol10"></option><option value="25" data-i18n="tol25" selected></option><option value="50" data-i18n="tol50"></option></select>
+        </label>
+        <label class="inline"><span data-i18n="j_hold"></span>
+          <select id="jHold"><option value="1"></option><option value="1.5" selected></option><option value="2"></option><option value="3"></option></select>
+        </label>
+        <label class="inline"><input type="checkbox" id="jAuto" checked> <span data-i18n="j_auto"></span></label>
+        <label class="inline" data-i18n-title="j_anyoct_title"><input type="checkbox" id="jAnyOct" checked> <span data-i18n="j_anyoct"></span></label>
+      </div>
+      <div class="judge-ctrl" style="margin-top:10px">
+        <button class="btn primary" id="jStart"></button>
+        <button class="btn" id="jTone" data-i18n="j_tone"></button>
+        <button class="btn" id="jSkip" disabled data-i18n="j_skip"></button>
+      </div>
+      <div class="judge-main">
+        <div class="jbox">
+          <div class="jk" data-i18n="j_target"></div>
+          <div class="jtarget" id="jTarget">—</div>
+          <div class="jdir" id="jDir"></div>
+          <div class="jprog"><i id="jProg"></i></div>
+        </div>
+        <div class="jbox">
+          <div class="jflash" id="jFlash">READY</div>
+          <div class="jdir" id="jDetail" style="color:var(--muted);font-weight:500"></div>
+        </div>
+        <div class="jbox">
+          <div class="jk" data-i18n="j_score"></div>
+          <div class="jscore" id="jScore">—</div>
+          <div class="jdir" id="jSum" style="color:var(--muted);font-weight:500;font-size:12px"></div>
+        </div>
+      </div>
+      <div class="chips" id="jChips"></div>
+    </section>
+
+    <!-- Pitch history -->
+    <section class="panel full">
+      <div class="label"><span data-i18n="hist_title"></span> <span class="legend"><span style="--c:var(--good)">±10c</span><span style="--c:var(--warn)">±25c</span><span style="--c:var(--bad)" data-i18n="hist_more"></span></span></div>
+      <canvas id="hist"></canvas>
+    </section>
+
+    <!-- Spectrum -->
+    <section class="panel full">
+      <div class="label"><span data-i18n="spec_title"></span>
+        <span class="legend">
+          <span style="--c:rgba(107,140,255,.6)" data-i18n="leg_low"></span>
+          <span style="--c:rgba(79,209,197,.6)" data-i18n="leg_mid"></span>
+          <span style="--c:rgba(246,173,85,.6)" data-i18n="leg_sf"></span>
+          <span style="--c:#fff" data-i18n="leg_f0"></span>
+        </span>
+      </div>
+      <canvas id="spec"></canvas>
+    </section>
+
+    <!-- Tools -->
+    <div class="tools full">
+      <section class="panel">
+        <div class="label" data-i18n="rec_title"></div>
+        <div class="toolrow">
+          <button class="btn rec" id="recBtn" disabled></button>
+          <a class="btn" id="dlBtn" style="display:none;text-decoration:none" data-i18n="rec_save"></a>
+          <span class="rectime" id="recTime">00:00</span>
+        </div>
+        <audio id="player" controls style="display:none"></audio>
+        <div class="hint" id="recHint"></div>
+      </section>
+
+      <section class="panel">
+        <div class="label" data-i18n="met_title"></div>
+        <div class="toolrow">
+          <button class="btn" id="metBtn"></button>
+          <button class="btn small" id="bpmDown">−</button>
+          <div class="bpm" id="bpmTxt">90</div>
+          <button class="btn small" id="bpmUp">+</button>
+          <select id="beats"><option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option><option value="6">6/8</option></select>
+          <button class="btn small" id="tap">TAP</button>
+        </div>
+        <div class="toolrow" style="margin-top:12px">
+          <span style="font-size:12px;color:var(--muted)">BPM</span>
+          <input type="range" id="bpm" min="40" max="208" value="90">
+          <span style="font-size:12px;color:var(--muted)" data-i18n="vol"></span>
+          <input type="range" id="vol" min="0" max="100" value="60" style="max-width:110px">
+        </div>
+        <div class="dots" id="dots"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="hint" data-i18n-html="foot"></div>
+</div>
+
+<!-- Guide -->
+<div class="guide" id="guide" hidden>
+  <div class="guide-card" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+    <div class="guide-head">
+      <h2 id="guideTitle" data-i18n="guide"></h2>
+      <button class="btn small" id="guideClose" data-i18n="close"></button>
+    </div>
+    <div class="guide-body" id="guideBody"></div>
+  </div>
+</div>
+
+<script>
+/* ======================================================================
+   i18n  (ko / ja / en)
+   ====================================================================== */
+const I18N = {
+/* ------------------------------------------------------------ 한국어 */
+ko: {
+  doc_title:'Vocal Analyzer', guide:'가이드', close:'닫기',
+  notation:'음 이름', notation_abc:'ABC (C D E)', notation_solfege:'도레미',
+  mic_start:'● 마이크 시작', mic_stop:'■ 마이크 중지',
+  st_idle:'마이크 시작을 누르면 분석이 시작됩니다',
+  st_analyzing:p=>`분석 중 · ${p.dev} · ${p.sr}Hz`,
+  st_stopped:'중지됨 · 기록은 유지됩니다',
+  dev_default:'기본 마이크',
+  err_insecure:'안전하지 않은 주소(http / content://)라 마이크를 쓸 수 없어요. https 주소로 열어 주세요.',
+  err_noapi:'이 환경에서는 마이크를 쓸 수 없어요. Chrome 또는 https / localhost에서 열어 주세요.',
+  err_NotAllowedError:'마이크가 차단되어 있어요. 주소창 왼쪽 자물쇠 → 권한 → 마이크를 "허용"으로 바꾼 뒤 새로고침하세요. (안드로이드는 설정 → 앱 → Chrome → 권한 → 마이크도 확인)',
+  err_NotFoundError:'마이크 장치를 찾지 못했어요. 마이크가 연결되어 있는지 확인해 주세요.',
+  err_NotReadableError:'다른 앱이 마이크를 쓰고 있어요. 통화·녹음·화상회의 앱을 닫고 다시 시도해 주세요.',
+  err_SecurityError:'보안 설정 때문에 마이크를 쓸 수 없어요. https 주소인지 확인해 주세요.',
+  err_AbortError:'마이크를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.',
+  err_generic:p=>`마이크를 시작하지 못했어요 (${p.n}${p.m ? ': ' + p.m : ''})`,
+  cents_idle:'음정 오차 — cents',
+  cents_fmt:p=>`음정 오차 ${p.c} cents · 목표 ${p.f}Hz`,
+  level:'입력 레벨', sens:'마이크 감도', gate:p=>`${p.db} dBFS 이상만 분석`,
+  hint_idle:'마이크를 켜고 소리를 내 보세요',
+  hint_none:'마이크 입력이 거의 없어요. 마이크에 가까이 대고 소리를 내거나, 감도를 올려 보세요.',
+  hint_small:'소리가 작아서 무시되고 있어요. 감도를 오른쪽으로 올려 보세요.',
+  hint_unvoiced:'소리는 들리는데 음높이를 못 찾고 있어요. "아~" 하고 길게 일정한 음으로 불러 보세요.',
+  hint_ok:'인식 중', hint_sound:'소리를 내 보세요',
+  hold_title:'최고음 / 최저음 기록', reset:'초기화', max:'▲ 최고음', min:'▼ 최저음',
+  span_none:'음역 폭: —',
+  span:p=>`음역 폭: ${p.s}반음` + (p.s ? ` (${p.o ? p.o + '옥타브 ' : ''}${p.r ? p.r + '반음' : ''})`.replace(' )', ')') : ''),
+  voice_title:'음역 프리셋 (성별 · 성부)', grp_female:'여성', grp_male:'남성',
+  soprano:'소프라노', mezzo:'메조소프라노', alto:'알토', tenor:'테너', baritone:'바리톤', bass:'베이스',
+  vpos_idle:'소리를 내면 음역 안의 위치가 표시됩니다',
+  vpos_below:'▼ 음역 아래 (무리하지 마세요)', vpos_above:'▲ 음역 위 (무리하지 마세요)',
+  vpos_low:'하단 음역 · 흉성 중심', vpos_mid:'중간 음역 · 믹스 구간', vpos_high:'상단 음역 · 두성/헤드 쪽',
+  formant_title:'울림 분석 (싱어스 포먼트 2.5–3.5kHz)',
+  fmt_weak:'울림 약함 · 공명이 앞으로 덜 나와요', fmt_mid:'울림 보통', fmt_strong:'울림 강함 · 소리가 멀리 뻗어요',
+  band_label:p=>`기본음 대역: ${p.b}`,
+  band_low:'저역 (100–200Hz 부근)', band_midlow:'중저역 (200–500Hz)', band_mid:'중역 (500Hz–2kHz)', band_high:'고역',
+  j_title:'실시간 판정 모드', j_wait:'대기 중',
+  j_mode_single:'단일 음', j_mode_five:'5음 워밍업 (도레미파솔파미레도)', j_mode_scale:'장음계 상행',
+  j_mode_scale2:'장음계 상행·하행', j_mode_arp:'아르페지오 (1-3-5-8-5-3-1)',
+  j_root:'시작음', j_tol:'허용 오차', tol10:'±10c 엄격', tol25:'±25c 보통', tol50:'±50c 입문',
+  j_hold:'유지', sec:p=>`${p.n}초`, j_auto:'기준음 자동 재생',
+  j_anyoct:'옥타브 무관 (남녀 혼합 레슨용)',
+  j_anyoct_title:'켜면 한 옥타브 위/아래에서 불러도 같은 음 이름이면 정답으로 판정합니다. 끄면 옥타브까지 맞아야 합니다.',
+  j_start:'▶ 판정 시작', j_end:'■ 판정 종료', j_tone:'🔊 기준음', j_skip:'⏭ 건너뛰기',
+  j_target:'목표 음', j_score:'점수',
+  j_ready_detail:'시작을 누르고 목표 음을 따라 불러 보세요',
+  j_go_detail:p=>`목표 음을 ±${p.tol}c 안에서 ${p.hold}초 유지하면 판정돼요`,
+  j_hear:'🔊 기준음 듣기', j_good:'● 좋아요, 그대로 유지!',
+  j_oct_up:'옥타브가 달라요 · ↓ 1옥타브 낮게', j_oct_down:'옥타브가 달라요 · ↑ 1옥타브 높게',
+  j_higher:p=>`↑ 더 높게 (${p.a})`, j_lower:p=>`↓ 더 낮게 (${p.a})`,
+  amt_semi:p=>`${p.n}반음`, amt_cents:p=>`${p.n}c`,
+  j_silence:'소리를 내 주세요',
+  j_skipped:p=>`${p.note} 건너뜀`,
+  j_result:p=>`${p.note} · 평균 오차 ${p.abs}c · ${I18N.ko[p.tend]}`,
+  tend_sharp:'살짝 높게(샤프) 들어갔어요', tend_flat:'살짝 낮게(플랫) 들어갔어요', tend_ok:'음정 중심이 정확해요',
+  j_summary:p=>`Perfect ${p.a} · Great ${p.b} · Good ${p.c} · Miss ${p.d}` + (p.tend ? ' · ' + I18N.ko[p.tend] : ''),
+  sum_sharp:'전체적으로 높게 부르는 경향', sum_flat:'전체적으로 낮게 부르는 경향', sum_ok:'높낮이 치우침 없음',
+  j_done:'완료', j_done_status:'세션 완료 · 다시 시작할 수 있어요',
+  j_micoff:'마이크가 꺼져서 판정을 멈췄어요', j_stopped:'판정을 멈췄어요',
+  j_progress:p=>`${p.i} / ${p.n} · ${p.hz}Hz`,
+  hist_title:'피치 히스토리 (최근 약 8초)', hist_more:'그 이상',
+  spec_title:'실시간 주파수 스펙트럼 (FFT · 로그 스케일)',
+  leg_low:'저역 100–200Hz', leg_mid:'중역 500Hz–2kHz', leg_sf:'싱어스 포먼트 2.5–3.5kHz', leg_f0:'기본음·배음',
+  rec_title:'녹음 & 다시 듣기', rec_btn:'● 녹음', rec_stop:'■ 녹음 중지', rec_save:'⬇ 저장',
+  rec_hint0:'마이크를 켠 뒤 녹음할 수 있어요.', rec_hint1:'녹음 버튼을 누르면 지금 들리는 소리를 그대로 녹음해요.',
+  rec_nomr:'이 브라우저는 녹음을 지원하지 않아요.', rec_rec:'녹음 중…',
+  rec_done:'재생해서 들어보고, 필요하면 저장하세요. 다시 녹음하면 덮어씁니다.',
+  met_title:'메트로놈', met_start:'▶ 시작', met_stop:'■ 정지', vol:'볼륨',
+  foot:'<kbd>Space</kbd> 마이크 시작/중지 · 정확한 분석을 위해 브라우저의 소음 제거·자동 볼륨을 끈 원음으로 분석합니다. 메트로놈을 켜고 노래할 땐 이어폰을 쓰면 클릭음이 분석에 섞이지 않아요. 마이크가 안 켜지면 Chrome으로 열거나, https / localhost 주소에서 실행해 주세요.',
+  guide_html:`
+<h3>3단계로 시작하기</h3>
+<ol>
+<li>Chrome 등 브라우저에서 이 페이지(https)를 열고 <b>마이크 시작</b>을 눌러 마이크 사용을 <b>허용</b>합니다.</li>
+<li>"아~" 하고 일정한 높이로 소리를 내면 음 이름·주파수(Hz)·센트 오차(음정이 얼마나 어긋났는지)가 바로 표시됩니다.</li>
+<li><b>실시간 판정 모드</b>에서 목표 음을 따라 부르면 PERFECT / GREAT / GOOD / MISS와 점수가 나옵니다.</li>
+</ol>
+
+<h3>레슨 전 준비</h3>
+<ul>
+<li><b>기기</b>: PC·태블릿 권장(폰도 가능). 선생님과 학생이 함께 볼 수 있는 큰 화면이 편해요.</li>
+<li><b>마이크</b>: 기기 내장 마이크나 유선 마이크를 권장합니다. 블루투스 이어폰 마이크는 음질이 낮아져 분석이 불안정할 수 있어요.</li>
+<li><b>환경</b>: 조용한 방, 입에서 마이크까지 15~30cm. 피아노나 반주를 함께 울리면 그 소리도 같이 분석됩니다.</li>
+<li>메트로놈을 켜고 노래할 때는 이어폰을 쓰면 클릭음이 섞이지 않아요.</li>
+</ul>
+
+<h3>화면 보는 법</h3>
+<ul>
+<li><b>큰 음 이름 / Hz / 바늘</b>: 지금 내는 음과 가장 가까운 음 이름, 실제 주파수, 목표 음과의 차이. 100센트 = 반음입니다. 초록(±10c 이내)·노랑(±25c 이내)·빨강(그 이상).</li>
+<li><b>입력 레벨 / 마이크 감도</b>: 흰 선보다 큰 소리만 분석합니다. 반응이 약하면 감도를 오른쪽으로 올리세요.</li>
+<li><b>피치 히스토리</b>: 최근 약 8초의 음정 궤적. 음의 시작(처음에 아래에서 올라오는지), 롱톤의 안정성, 비브라토의 폭과 속도, 끝음 처리(떨어지는지)를 눈으로 확인할 수 있어요.</li>
+<li><b>스펙트럼</b>: 소리의 주파수 성분. 흰 세로선이 기본음(F0)과 배음입니다. 2.5~3.5kHz 구간이 싱어스 포먼트 대역이에요.</li>
+<li><b>울림 분석</b>: 2.5~3.5kHz 에너지 비율. 주로 남성·낮은 음역에서 뚜렷하게 나타나며, 여성 고음역에서는 잘 나타나지 않아 바가 낮다고 문제인 것은 아닙니다. 진단이 아니라 참고용이에요.</li>
+<li><b>최고음 / 최저음</b>: 같은 음이 잠시 안정적으로 유지될 때만 기록됩니다(순간적인 튐은 무시). 음역 폭도 계산돼요.</li>
+</ul>
+
+<h3>실시간 판정 모드</h3>
+<ul>
+<li>패턴(단일 음, 5음 워밍업, 장음계, 아르페지오)과 시작음을 고르고 <b>판정 시작</b>. 기준음이 울리면 그 음을 따라 부릅니다.</li>
+<li>목표 음을 <b>허용 오차 안에서 설정한 시간 동안 유지</b>하면 판정이 나오고 다음 음으로 넘어갑니다. 음이 벗어나면 "↑ 더 높게 / ↓ 더 낮게"로 방향을 알려줘요.</li>
+<li>등급(기본 ±25c 기준): 평균 오차 약 7c 이내 = PERFECT, 약 15c 이내 = GREAT, 그 외 허용 안 = GOOD, 건너뜀 = MISS. 허용 오차를 ±10c(엄격)·±50c(입문)로 바꾸면 기준도 함께 달라집니다.</li>
+<li>끝나면 점수(100점 만점)와 높게/낮게 부르는 경향 요약이 나옵니다.</li>
+</ul>
+<div class="note-box"><b>남녀 혼합 레슨</b>: <b>옥타브 무관</b>을 켜 두면 남성이 여성 키의 음을 한 옥타브 아래에서 불러도 같은 음 이름이면 정답으로 판정합니다. 옥타브까지 맞추는 연습을 할 때는 끄세요. 오른쪽 위의 <b>음역 프리셋(여성: 소프라노·메조·알토 / 남성: 테너·바리톤·베이스)</b>을 고르면 피치 히스토리의 표시 범위와 판정 시작음의 기본값이 그 음역에 맞춰집니다. 시작음은 직접 바꿀 수도 있어요.</div>
+
+<h3>레슨 활용 아이디어</h3>
+<ul>
+<li><b>워밍업(5분)</b>: 5음 워밍업을 ±50c(입문)에서 시작해 ±25c로 좁혀 가기.</li>
+<li><b>롱톤 점검</b>: 단일 음을 3초 유지 → 피치 히스토리의 선이 평평한지 확인.</li>
+<li><b>비브라토·음의 시작·끝음</b>: 히스토리 그래프를 함께 보며 폭, 속도, 아래에서 끌어올리는 습관, 끝에서 떨어지는 습관을 이야기하기.</li>
+<li><b>음역 체크</b>: 최고음/최저음 기록으로 현재 음역 폭을 확인하고, 다음 레슨에서 비교.</li>
+<li><b>녹음 → 다시 듣기</b>: 같은 구간을 녹음해 학생이 직접 들어 보게 하기. 메트로놈과 함께 쓰면 템포 연습에도 좋아요.</li>
+</ul>
+
+<h3>정확도와 한계</h3>
+<ul>
+<li>연습 보조 도구입니다. 목소리 상태의 진단이나 의학적 판단에는 쓸 수 없어요.</li>
+<li>소음·울림이 큰 방, 속삭이는 소리, 숨이 많이 섞인 소리에서는 음정을 못 잡을 수 있어요.</li>
+<li>같은 음이라도 마이크 거리와 방 환경에 따라 레벨이 달라지므로, 반응이 이상하면 감도와 거리를 먼저 조정하세요.</li>
+</ul>
+
+<h3>문제 해결</h3>
+<ul>
+<li><b>마이크가 시작되지 않을 때</b>: 주소창 왼쪽 자물쇠 → 권한 → 마이크 "허용" → 새로고침. 안드로이드는 설정 → 앱 → Chrome → 권한 → 마이크도 확인. 다른 앱(통화·화상회의)이 마이크를 쓰고 있어도 시작되지 않아요.</li>
+<li><b>시작은 되는데 반응이 없을 때</b>: 입력 레벨 바가 움직이는지 확인 → 움직이지 않으면 마이크 선택/음소거 확인, 움직이지만 흰 선을 못 넘으면 감도를 올리세요.</li>
+<li><b>음이 자꾸 한 옥타브 튈 때</b>: 일정한 음으로 길게 불러 보세요. 목소리가 갈라지거나 숨이 많으면 옥타브 오류가 생기기 쉬워요.</li>
+</ul>
+
+<h3>개인정보</h3>
+<p>음성은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다. 녹음 데이터도 <b>저장</b>을 누르지 않는 한 페이지를 닫으면 사라집니다.</p>
+`
+},
+
+/* ------------------------------------------------------------ 日本語 */
+ja: {
+  doc_title:'Vocal Analyzer', guide:'ガイド', close:'閉じる',
+  notation:'音名表記', notation_abc:'ABC（C D E）', notation_solfege:'ドレミ',
+  mic_start:'● マイク開始', mic_stop:'■ マイク停止',
+  st_idle:'「マイク開始」を押すと分析が始まります',
+  st_analyzing:p=>`分析中 · ${p.dev} · ${p.sr}Hz`,
+  st_stopped:'停止中 · 記録は保持されます',
+  dev_default:'既定のマイク',
+  err_insecure:'安全でないアドレス（http / content://）のため、マイクを使えません。https のアドレスで開いてください。',
+  err_noapi:'この環境ではマイクを使えません。Chrome、または https / localhost で開いてください。',
+  err_NotAllowedError:'マイクがブロックされています。アドレスバー左の鍵アイコン →「権限」→ マイクを「許可」に変更し、ページを再読み込みしてください。（Android は 設定 → アプリ → Chrome → 権限 → マイク も確認）',
+  err_NotFoundError:'マイクが見つかりません。マイクが接続されているか確認してください。',
+  err_NotReadableError:'他のアプリがマイクを使用中です。通話・録音・ビデオ会議アプリを閉じてから、もう一度お試しください。',
+  err_SecurityError:'セキュリティ設定のためマイクを使えません。https のアドレスか確認してください。',
+  err_AbortError:'マイクを開始できませんでした。しばらくしてからもう一度お試しください。',
+  err_generic:p=>`マイクを開始できませんでした（${p.n}${p.m ? ': ' + p.m : ''}）`,
+  cents_idle:'音程のずれ — cents',
+  cents_fmt:p=>`音程のずれ ${p.c} cents · 目標 ${p.f}Hz`,
+  level:'入力レベル', sens:'マイク感度', gate:p=>`${p.db} dBFS 以上のみ分析`,
+  hint_idle:'マイクをオンにして、声を出してみてください',
+  hint_none:'マイク入力がほとんどありません。マイクに近づいて声を出すか、感度を上げてください。',
+  hint_small:'音が小さいため無視されています。感度を右に上げてください。',
+  hint_unvoiced:'音は拾えていますが、音程を検出できません。「アー」と一定の高さで長く出してみてください。',
+  hint_ok:'認識中', hint_sound:'声を出してください',
+  hold_title:'最高音 / 最低音の記録', reset:'リセット', max:'▲ 最高音', min:'▼ 最低音',
+  span_none:'音域幅: —',
+  span:p=>`音域幅: ${p.s}半音` + (p.s ? `（${p.o ? p.o + 'オクターブ' : ''}${p.r ? p.r + '半音' : ''}）` : ''),
+  voice_title:'音域プリセット（性別・声種）', grp_female:'女性', grp_male:'男性',
+  soprano:'ソプラノ', mezzo:'メゾソプラノ', alto:'アルト', tenor:'テノール', baritone:'バリトン', bass:'バス',
+  vpos_idle:'声を出すと、音域内での位置が表示されます',
+  vpos_below:'▼ 音域より下（無理をしないでください）', vpos_above:'▲ 音域より上（無理をしないでください）',
+  vpos_low:'下部音域・地声（チェスト）寄り', vpos_mid:'中間音域・ミックス域', vpos_high:'上部音域・頭声（ヘッド）寄り',
+  formant_title:'響きの分析（シンガーズフォルマント 2.5–3.5kHz）',
+  fmt_weak:'響き弱め・共鳴が前に出にくい状態', fmt_mid:'響きは普通', fmt_strong:'響き強め・声がよく通る状態',
+  band_label:p=>`基音の帯域: ${p.b}`,
+  band_low:'低域（100–200Hz付近）', band_midlow:'中低域（200–500Hz）', band_mid:'中域（500Hz–2kHz）', band_high:'高域',
+  j_title:'リアルタイム判定モード', j_wait:'待機中',
+  j_mode_single:'単音', j_mode_five:'5音ウォームアップ（ドレミファソファミレド）', j_mode_scale:'長音階 上行',
+  j_mode_scale2:'長音階 上行・下行', j_mode_arp:'アルペジオ（1-3-5-8-5-3-1）',
+  j_root:'開始音', j_tol:'許容誤差', tol10:'±10c 厳しめ', tol25:'±25c 標準', tol50:'±50c 入門',
+  j_hold:'保持', sec:p=>`${p.n}秒`, j_auto:'基準音を自動再生',
+  j_anyoct:'オクターブ不問（男女混合レッスン用）',
+  j_anyoct_title:'オンにすると、1オクターブ上下で歌っても同じ音名なら正解と判定します。オフの場合はオクターブまで合っている必要があります。',
+  j_start:'▶ 判定開始', j_end:'■ 判定終了', j_tone:'🔊 基準音', j_skip:'⏭ スキップ',
+  j_target:'目標音', j_score:'スコア',
+  j_ready_detail:'「判定開始」を押して、目標音に合わせて歌ってみましょう',
+  j_go_detail:p=>`目標音を ±${p.tol}c 以内で ${p.hold} 秒キープすると判定されます`,
+  j_hear:'🔊 基準音を聴いています', j_good:'● いいですね、そのままキープ！',
+  j_oct_up:'オクターブが違います · ↓ 1オクターブ低く', j_oct_down:'オクターブが違います · ↑ 1オクターブ高く',
+  j_higher:p=>`↑ もっと高く（${p.a}）`, j_lower:p=>`↓ もっと低く（${p.a}）`,
+  amt_semi:p=>`${p.n}半音`, amt_cents:p=>`${p.n}c`,
+  j_silence:'声を出してください',
+  j_skipped:p=>`${p.note} をスキップ`,
+  j_result:p=>`${p.note} · 平均誤差 ${p.abs}c · ${I18N.ja[p.tend]}`,
+  tend_sharp:'少し高め（シャープ）に入りました', tend_flat:'少し低め（フラット）に入りました', tend_ok:'音程の中心は正確です',
+  j_summary:p=>`Perfect ${p.a} · Great ${p.b} · Good ${p.c} · Miss ${p.d}` + (p.tend ? ' · ' + I18N.ja[p.tend] : ''),
+  sum_sharp:'全体的に高めに歌う傾向', sum_flat:'全体的に低めに歌う傾向', sum_ok:'高低の偏りなし',
+  j_done:'完了', j_done_status:'セッション完了 · もう一度始められます',
+  j_micoff:'マイクが停止したため判定を止めました', j_stopped:'判定を止めました',
+  j_progress:p=>`${p.i} / ${p.n} · ${p.hz}Hz`,
+  hist_title:'ピッチ履歴（直近約8秒）', hist_more:'それ以上',
+  spec_title:'リアルタイム周波数スペクトル（FFT · 対数スケール）',
+  leg_low:'低域 100–200Hz', leg_mid:'中域 500Hz–2kHz', leg_sf:'シンガーズフォルマント 2.5–3.5kHz', leg_f0:'基音・倍音',
+  rec_title:'録音と再生', rec_btn:'● 録音', rec_stop:'■ 録音停止', rec_save:'⬇ 保存',
+  rec_hint0:'マイクをオンにすると録音できます。', rec_hint1:'録音ボタンを押すと、今聞こえている声をそのまま録音します。',
+  rec_nomr:'このブラウザは録音に対応していません。', rec_rec:'録音中…',
+  rec_done:'再生して確認し、必要なら保存してください。録音し直すと上書きされます。',
+  met_title:'メトロノーム', met_start:'▶ 開始', met_stop:'■ 停止', vol:'音量',
+  foot:'<kbd>Space</kbd> でマイク開始/停止 · 正確に分析するため、ブラウザのノイズ除去・自動音量調整をオフにした元の音で解析します。メトロノームを鳴らして歌うときは、イヤホンを使うとクリック音が混ざりません。マイクが起動しない場合は、Chrome で https / localhost のアドレスから開いてください。',
+  guide_html:`
+<h3>3ステップで始める</h3>
+<ol>
+<li>Chrome などのブラウザでこのページ（https）を開き、「<b>マイク開始</b>」を押して、マイクの使用を<b>許可</b>します。</li>
+<li>「アー」と一定の高さで声を出すと、音名・周波数（Hz）・セント誤差（音程がどれだけずれているか）がすぐに表示されます。</li>
+<li>「<b>リアルタイム判定モード</b>」で目標音に合わせて歌うと、PERFECT / GREAT / GOOD / MISS の判定とスコアが出ます。</li>
+</ol>
+
+<h3>レッスン前の準備</h3>
+<ul>
+<li><b>端末</b>：PC・タブレット推奨（スマホでも動作します）。先生と生徒が一緒に見られる大きめの画面が便利です。</li>
+<li><b>マイク</b>：端末内蔵マイクか有線マイクを推奨します。Bluetoothイヤホンのマイクは音質が下がり、解析が不安定になることがあります。</li>
+<li><b>環境</b>：静かな部屋で、口からマイクまで15〜30cmほど。ピアノや伴奏を同時に鳴らすと、その音も一緒に解析されます。</li>
+<li>メトロノームを鳴らして歌うときは、イヤホンを使うとクリック音が混ざりません。</li>
+</ul>
+
+<h3>画面の見方</h3>
+<ul>
+<li><b>大きな音名 / Hz / 針</b>：いま出している音に最も近い音名、実際の周波数、目標音とのずれ。100セント＝半音です。緑（±10c以内）・黄（±25c以内）・赤（それ以上）。</li>
+<li><b>入力レベル / マイク感度</b>：白い線より大きな音だけを分析します。反応が弱いときは感度を右に上げてください。</li>
+<li><b>ピッチ履歴</b>：直近約8秒の音程の軌跡。音の出だし（下から入ってくるか）、ロングトーンの安定性、ビブラートの幅と速さ、語尾の処理（フォールしていないか）を目で確認できます。</li>
+<li><b>スペクトル</b>：声の周波数成分。白い縦線が基音（F0）と倍音です。2.5〜3.5kHz付近がシンガーズフォルマントの帯域です。</li>
+<li><b>響きの分析</b>：2.5〜3.5kHzのエネルギー比。主に男声や低めの音域ではっきり現れ、女声の高音域ではあまり現れないため、バーが低くても問題とは限りません。診断ではなく参考表示です。</li>
+<li><b>最高音 / 最低音</b>：同じ音が少しの間安定して続いたときだけ記録します（一瞬の跳ねは無視）。音域幅も計算されます。</li>
+</ul>
+
+<h3>リアルタイム判定モード</h3>
+<ul>
+<li>パターン（単音・5音ウォームアップ・長音階・アルペジオ）と開始音を選び、「<b>判定開始</b>」。基準音が鳴るので、その音に合わせて歌います。</li>
+<li>目標音を<b>許容誤差の範囲内で設定した時間キープ</b>すると判定が出て、次の音へ進みます。ずれているときは「↑ もっと高く / ↓ もっと低く」で方向を教えます。</li>
+<li>等級（標準の ±25c の場合）：平均誤差 約7c以内 ＝ PERFECT、約15c以内 ＝ GREAT、それ以外の許容範囲内 ＝ GOOD、スキップ ＝ MISS。許容誤差を ±10c（厳しめ）・±50c（入門）に変えると、基準も一緒に変わります。</li>
+<li>終了すると、スコア（100点満点）と、高め/低めに歌う傾向のまとめが表示されます。</li>
+</ul>
+<div class="note-box"><b>男女混合レッスン</b>：「<b>オクターブ不問</b>」をオンにしておくと、男性が女性キーの音を1オクターブ下で歌っても、同じ音名なら正解と判定します。オクターブまで合わせる練習のときはオフにしてください。右上の<b>音域プリセット（女性：ソプラノ・メゾ・アルト ／ 男性：テノール・バリトン・バス）</b>を選ぶと、ピッチ履歴の表示範囲と判定の開始音の初期値がその音域に合わせて変わります。開始音は自分で変更することもできます。</div>
+
+<h3>レッスンでの活用アイデア</h3>
+<ul>
+<li><b>ウォームアップ（5分）</b>：5音ウォームアップを ±50c（入門）から始めて、±25c に絞っていく。</li>
+<li><b>ロングトーンの確認</b>：単音を3秒キープ → ピッチ履歴の線が平らかどうかを見る。</li>
+<li><b>ビブラート・音の出だし・語尾</b>：履歴グラフを一緒に見ながら、幅・速さ、下からしゃくる癖、語尾で下がる癖について話す。</li>
+<li><b>音域チェック</b>：最高音/最低音の記録で現在の音域幅を確認し、次回のレッスンで比べる。</li>
+<li><b>録音 → 聴き返し</b>：同じ箇所を録音して、生徒本人に聴いてもらう。メトロノームと併用するとテンポの練習にも使えます。</li>
+</ul>
+
+<h3>精度と限界</h3>
+<ul>
+<li>練習の補助ツールです。声の状態の診断や医学的な判断には使えません。</li>
+<li>ノイズや反響の大きい部屋、ささやき声、息の成分が多い声では、音程を検出できないことがあります。</li>
+<li>同じ声でも、マイクとの距離や部屋の環境でレベルが変わります。反応がおかしいときは、まず感度と距離を調整してください。</li>
+</ul>
+
+<h3>うまく動かないとき</h3>
+<ul>
+<li><b>マイクが始まらない</b>：アドレスバー左の鍵アイコン →「権限」→ マイク「許可」→ 再読み込み。Android は 設定 → アプリ → Chrome → 権限 → マイク も確認。他のアプリ（通話・ビデオ会議）がマイクを使用中でも開始できません。</li>
+<li><b>始まるのに反応しない</b>：入力レベルのバーが動くか確認 → 動かない場合はマイクの選択やミュートを確認、動いても白い線を超えない場合は感度を上げてください。</li>
+<li><b>音が1オクターブ跳ねる</b>：一定の高さで長く歌ってみてください。声が割れたり息が多かったりすると、オクターブの誤検出が起きやすくなります。</li>
+</ul>
+
+<h3>プライバシー</h3>
+<p>音声はブラウザの中だけで処理され、サーバーには送信されません。録音データも、「<b>保存</b>」を押さない限り、ページを閉じると消えます。</p>
+`
+},
+
+/* ------------------------------------------------------------ English */
+en: {
+  doc_title:'Vocal Analyzer', guide:'Guide', close:'Close',
+  notation:'Note names', notation_abc:'ABC (C D E)', notation_solfege:'Do Re Mi',
+  mic_start:'● Start mic', mic_stop:'■ Stop mic',
+  st_idle:'Press "Start mic" to begin analysis',
+  st_analyzing:p=>`Analyzing · ${p.dev} · ${p.sr}Hz`,
+  st_stopped:'Stopped · records are kept',
+  dev_default:'Default microphone',
+  err_insecure:'The microphone cannot be used on an insecure address (http / content://). Please open this page over https.',
+  err_noapi:'The microphone is not available here. Open this page in Chrome over https or localhost.',
+  err_NotAllowedError:'The microphone is blocked. Tap the lock icon at the left of the address bar → Permissions → set Microphone to "Allow", then reload. (On Android, also check Settings → Apps → Chrome → Permissions → Microphone.)',
+  err_NotFoundError:'No microphone was found. Please check that a microphone is connected.',
+  err_NotReadableError:'Another app is using the microphone. Close calling, recording or video-meeting apps and try again.',
+  err_SecurityError:'A security setting is blocking the microphone. Please check that the address starts with https.',
+  err_AbortError:'The microphone could not be started. Please try again in a moment.',
+  err_generic:p=>`The microphone could not be started (${p.n}${p.m ? ': ' + p.m : ''})`,
+  cents_idle:'Pitch error — cents',
+  cents_fmt:p=>`Pitch error ${p.c} cents · target ${p.f}Hz`,
+  level:'Input level', sens:'Mic sensitivity', gate:p=>`Analyzing above ${p.db} dBFS`,
+  hint_idle:'Turn on the mic and make a sound',
+  hint_none:'Almost no input from the mic. Move closer and sing, or raise the sensitivity.',
+  hint_small:'The sound is too quiet and is being ignored. Move the sensitivity slider to the right.',
+  hint_unvoiced:'Sound is coming in but no pitch is found. Try a long, steady "ah" on one note.',
+  hint_ok:'Detecting', hint_sound:'Make a sound',
+  hold_title:'Highest / lowest note', reset:'Reset', max:'▲ Highest', min:'▼ Lowest',
+  span_none:'Range: —',
+  span:p=>`Range: ${p.s} semitones` + (p.s ? ` (${p.o ? p.o + ' oct ' : ''}${p.r ? p.r + ' st' : ''})`.replace(' )', ')') : ''),
+  voice_title:'Range preset (gender · voice type)', grp_female:'Female', grp_male:'Male',
+  soprano:'Soprano', mezzo:'Mezzo-soprano', alto:'Alto', tenor:'Tenor', baritone:'Baritone', bass:'Bass',
+  vpos_idle:'Sing to see where you are within the range',
+  vpos_below:'▼ Below the range (don\'t force it)', vpos_above:'▲ Above the range (don\'t force it)',
+  vpos_low:'Lower range · chest-voice side', vpos_mid:'Middle range · mix zone', vpos_high:'Upper range · head-voice side',
+  formant_title:'Resonance (singer\'s formant 2.5–3.5kHz)',
+  fmt_weak:'Weak ring · resonance sits further back', fmt_mid:'Moderate ring', fmt_strong:'Strong ring · the voice carries well',
+  band_label:p=>`Fundamental band: ${p.b}`,
+  band_low:'Low (around 100–200Hz)', band_midlow:'Low-mid (200–500Hz)', band_mid:'Mid (500Hz–2kHz)', band_high:'High',
+  j_title:'Live judging mode', j_wait:'Idle',
+  j_mode_single:'Single note', j_mode_five:'5-note warm-up (Do Re Mi Fa Sol Fa Mi Re Do)', j_mode_scale:'Major scale, up',
+  j_mode_scale2:'Major scale, up and down', j_mode_arp:'Arpeggio (1-3-5-8-5-3-1)',
+  j_root:'Start note', j_tol:'Tolerance', tol10:'±10c strict', tol25:'±25c standard', tol50:'±50c beginner',
+  j_hold:'Hold', sec:p=>`${p.n} s`, j_auto:'Play reference tone automatically',
+  j_anyoct:'Any octave (for mixed male/female lessons)',
+  j_anyoct_title:'When on, singing the same note name an octave higher or lower counts as correct. When off, the octave must match too.',
+  j_start:'▶ Start judging', j_end:'■ Stop judging', j_tone:'🔊 Reference tone', j_skip:'⏭ Skip',
+  j_target:'Target note', j_score:'Score',
+  j_ready_detail:'Press Start and sing along with the target note',
+  j_go_detail:p=>`Hold the target within ±${p.tol}c for ${p.hold} s to be judged`,
+  j_hear:'🔊 Listen to the reference', j_good:'● Good, keep holding!',
+  j_oct_up:'Wrong octave · ↓ one octave lower', j_oct_down:'Wrong octave · ↑ one octave higher',
+  j_higher:p=>`↑ Higher (${p.a})`, j_lower:p=>`↓ Lower (${p.a})`,
+  amt_semi:p=>`${p.n} st`, amt_cents:p=>`${p.n}c`,
+  j_silence:'Please make a sound',
+  j_skipped:p=>`${p.note} skipped`,
+  j_result:p=>`${p.note} · average error ${p.abs}c · ${I18N.en[p.tend]}`,
+  tend_sharp:'You came in slightly sharp', tend_flat:'You came in slightly flat', tend_ok:'Pitch center is accurate',
+  j_summary:p=>`Perfect ${p.a} · Great ${p.b} · Good ${p.c} · Miss ${p.d}` + (p.tend ? ' · ' + I18N.en[p.tend] : ''),
+  sum_sharp:'Tends to sing sharp overall', sum_flat:'Tends to sing flat overall', sum_ok:'No sharp/flat bias',
+  j_done:'Done', j_done_status:'Session complete · you can start again',
+  j_micoff:'Judging stopped because the mic was turned off', j_stopped:'Judging stopped',
+  j_progress:p=>`${p.i} / ${p.n} · ${p.hz}Hz`,
+  hist_title:'Pitch history (last ~8 s)', hist_more:'more',
+  spec_title:'Live frequency spectrum (FFT · log scale)',
+  leg_low:'Low 100–200Hz', leg_mid:'Mid 500Hz–2kHz', leg_sf:'Singer\'s formant 2.5–3.5kHz', leg_f0:'Fundamental & harmonics',
+  rec_title:'Record & playback', rec_btn:'● Record', rec_stop:'■ Stop recording', rec_save:'⬇ Save',
+  rec_hint0:'Turn on the mic to record.', rec_hint1:'Press Record to capture what the mic is hearing.',
+  rec_nomr:'This browser does not support recording.', rec_rec:'Recording…',
+  rec_done:'Play it back and save it if you like. Recording again overwrites it.',
+  met_title:'Metronome', met_start:'▶ Start', met_stop:'■ Stop', vol:'Volume',
+  foot:'<kbd>Space</kbd> starts/stops the mic · For accurate analysis the raw sound is used, with the browser\'s noise suppression and auto gain turned off. When singing along with the metronome, use earphones so the click does not leak into the analysis. If the mic will not start, open this page in Chrome over https or localhost.',
+  guide_html:`
+<h3>Get started in 3 steps</h3>
+<ol>
+<li>Open this page (https) in a browser such as Chrome, press <b>Start mic</b>, and <b>allow</b> microphone access.</li>
+<li>Sing a steady "ah". The note name, frequency (Hz) and cents error (how far off the pitch is) appear immediately.</li>
+<li>In <b>Live judging mode</b>, sing the target notes and get PERFECT / GREAT / GOOD / MISS and a score.</li>
+</ol>
+
+<h3>Before the lesson</h3>
+<ul>
+<li><b>Device</b>: a PC or tablet is recommended (phones work too). A larger screen lets teacher and student look at it together.</li>
+<li><b>Microphone</b>: use the built-in or a wired microphone. Bluetooth earphone mics have reduced sound quality and can make analysis unstable.</li>
+<li><b>Room</b>: a quiet room, with the mic 15–30 cm from the mouth. If a piano or backing track is playing, that sound is analyzed as well.</li>
+<li>When singing with the metronome, use earphones so the click does not enter the analysis.</li>
+</ul>
+
+<h3>Reading the screen</h3>
+<ul>
+<li><b>Big note name / Hz / needle</b>: the nearest note to what you are singing, the actual frequency, and the offset from that note. 100 cents = one semitone. Green = within ±10c, yellow = within ±25c, red = beyond that.</li>
+<li><b>Input level / mic sensitivity</b>: only sound louder than the white line is analyzed. If the response is weak, move the sensitivity slider to the right.</li>
+<li><b>Pitch history</b>: the pitch trace for about the last 8 seconds. You can see how a note starts (scooping up from below?), the stability of long tones, the width and speed of vibrato, and how phrases end (falling off?).</li>
+<li><b>Spectrum</b>: the frequency content of the voice. White vertical lines mark the fundamental (F0) and harmonics. The 2.5–3.5 kHz region is the singer's formant band.</li>
+<li><b>Resonance</b>: the share of energy at 2.5–3.5 kHz. It shows up mostly in male and lower voices and is less pronounced in high female voices, so a low bar is not necessarily a problem. It is a reference, not a diagnosis.</li>
+<li><b>Highest / lowest note</b>: recorded only when the same note holds steady for a moment (brief spikes are ignored). The range width is calculated too.</li>
+</ul>
+
+<h3>Live judging mode</h3>
+<ul>
+<li>Choose a pattern (single note, 5-note warm-up, major scale, arpeggio) and a start note, then press <b>Start judging</b>. A reference tone plays; sing along with it.</li>
+<li>When you <b>hold the target within the tolerance for the set time</b>, the note is judged and the next one begins. If you are off, the display says "↑ Higher / ↓ Lower".</li>
+<li>Grades (with the default ±25c): average error within about 7c = PERFECT, within about 15c = GREAT, anything else inside the tolerance = GOOD, skipped = MISS. Switching the tolerance to ±10c (strict) or ±50c (beginner) changes these thresholds too.</li>
+<li>At the end you get a score out of 100 and a summary of whether you tend to sing sharp or flat.</li>
+</ul>
+<div class="note-box"><b>Mixed male/female lessons</b>: with <b>Any octave</b> turned on, a man singing a woman's note an octave lower is judged correct as long as the note name matches. Turn it off when practicing exact octaves. Choosing a <b>range preset (Female: soprano / mezzo / alto — Male: tenor / baritone / bass)</b> adapts the pitch-history display range and the default start note to that range. You can still change the start note yourself.</div>
+
+<h3>Lesson ideas</h3>
+<ul>
+<li><b>Warm-up (5 min)</b>: start the 5-note warm-up at ±50c (beginner) and tighten to ±25c.</li>
+<li><b>Long-tone check</b>: hold a single note for 3 seconds and see whether the line in the pitch history stays flat.</li>
+<li><b>Vibrato, note onsets, phrase endings</b>: look at the history graph together and talk about width, speed, scooping up into notes, and falling off at the end.</li>
+<li><b>Range check</b>: use the highest/lowest note record to see the current range, then compare at the next lesson.</li>
+<li><b>Record and listen back</b>: record the same passage and let the student hear it. Combine it with the metronome for tempo practice.</li>
+</ul>
+
+<h3>Accuracy and limits</h3>
+<ul>
+<li>This is a practice aid. It cannot be used to diagnose the condition of a voice or for medical judgments.</li>
+<li>Noisy or very reverberant rooms, whispering, and very breathy sounds may prevent pitch detection.</li>
+<li>Even for the same voice, the level changes with mic distance and room. If it behaves oddly, adjust sensitivity and distance first.</li>
+</ul>
+
+<h3>Troubleshooting</h3>
+<ul>
+<li><b>The mic will not start</b>: lock icon at the left of the address bar → Permissions → Microphone "Allow" → reload. On Android, also check Settings → Apps → Chrome → Permissions → Microphone. It also will not start if another app (a call or video meeting) is using the mic.</li>
+<li><b>It starts but nothing reacts</b>: check whether the input level bar moves. If it does not, check the mic selection and mute. If it moves but never passes the white line, raise the sensitivity.</li>
+<li><b>The pitch keeps jumping an octave</b>: sing a long, steady note. A cracking or very breathy voice makes octave errors more likely.</li>
+</ul>
+
+<h3>Privacy</h3>
+<p>Audio is processed only inside the browser and is not sent to any server. A recording disappears when the page is closed unless you press <b>Save</b>.</p>
+`
+}
+};
+window.__I18N = I18N;
+
+/* ======================================================================
+   App
+   ====================================================================== */
+(() => {
+const $ = id => document.getElementById(id);
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SOLFEGE = {
+  ko:['도','도#','레','레#','미','파','파#','솔','솔#','라','라#','시'],
+  ja:['ド','ド#','レ','レ#','ミ','ファ','ファ#','ソ','ソ#','ラ','ラ#','シ'],
+  en:['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Ti']
+};
+const VOICES = { soprano:[60,84], mezzo:[57,81], alto:[53,77], tenor:[48,72], baritone:[45,69], bass:[40,64] };
+const SPEC_MIN = 50, SPEC_MAX = 8000;
+const HIST_LEN = 480;
+
+/* ---------- language ---------- */
+let LANG = 'ko', NOTATION = 'abc';
+function detectLang() {
+  try { const s = localStorage.getItem('va_lang'); if (s && I18N[s]) return s; } catch (e) {}
+  const n = (navigator.language || 'ko').toLowerCase();
+  return n.startsWith('ja') ? 'ja' : n.startsWith('ko') ? 'ko' : 'en';
+}
+function t(key, p) {
+  let v = I18N[LANG][key];
+  if (v === undefined) v = I18N.en[key];
+  if (v === undefined) return key;
+  if (typeof v === 'function') return v(p || {});
+  return String(v).replace(/\{(\w+)\}/g, (m, k) => (p && p[k] !== undefined ? p[k] : m));
+}
+
+/* ---------- state ---------- */
+let A4 = 440;
+let ctx = null, stream = null, source = null, analyser = null;
+let running = false, raf = 0;
+let timeBuf, freqBuf, yinBuf;
+let recentF = [], silentFrames = 0;
+let stableNote = null, stableCount = 0, maxF = null, minF = null;
+const history = new Array(HIST_LEN).fill(null);
+let fmtSmooth = 0;
+let gateDb = -58, gateRms = Math.pow(10, -58 / 20);
+let quietFrames = 0, unvoicedFrames = 0;
+const LVL_MIN = -70;   // level bar spans -70..0 dBFS
+let curStatus = { key: 'st_idle', p: {}, err: false };
+
+/* ---------- helpers ---------- */
+const freqToMidi = f => 69 + 12 * Math.log2(f / A4);
+const midiToFreq = m => A4 * Math.pow(2, (m - 69) / 12);
+const pcName = pc => NOTATION === 'solfege' ? SOLFEGE[LANG][pc] : NOTE_NAMES[pc];
+const midiName = m => { const r = Math.round(m); return pcName(((r % 12) + 12) % 12) + (Math.floor(r / 12) - 1); };
+const splitName = m => { const r = Math.round(m); return [pcName(((r % 12) + 12) % 12), Math.floor(r / 12) - 1]; };
+const median = a => { const s = [...a].sort((x, y) => x - y); return s[s.length >> 1]; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const centsColor = c => Math.abs(c) <= 10 ? '#68d391' : Math.abs(c) <= 25 ? '#f6e05e' : '#fc8181';
+
+function ensureCtx() {
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+
+function setStatus(key, p, err) { curStatus = { key, p: p || {}, err: !!err }; renderStatus(); }
+function renderStatus() { const s = $('status'); s.textContent = t(curStatus.key, curStatus.p); s.classList.toggle('err', curStatus.err); }
+
+function setGate() {
+  gateDb = -30 - (+$('sens').value) * 0.4;           // 0 -> -30dB (low sensitivity), 100 -> -70dB (high)
+  gateRms = Math.pow(10, gateDb / 20);
+  $('gateTxt').textContent = t('gate', { db: gateDb.toFixed(0) });
+  $('gateMark').style.left = clamp((gateDb - LVL_MIN) / -LVL_MIN * 100, 0, 100) + '%';
+}
+
+/* ---------- canvas sizing ---------- */
+const histCv = $('hist'), specCv = $('spec');
+const hctx = histCv.getContext('2d'), sctx = specCv.getContext('2d');
+function fitCanvas(cv) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+}
+function resizeAll() { fitCanvas(histCv); fitCanvas(specCv); drawHistory(); if (!running) drawSpectrum(0); }
+new ResizeObserver(resizeAll).observe(document.body);
+
+/* ---------- YIN pitch detection ---------- */
+function detectPitch(buf, sr) {
+  let sum = 0;
+  for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+  const rms = Math.sqrt(sum / buf.length);
+  if (rms < gateRms) return { f: 0, rms, clarity: 0 };
+
+  const tauMin = Math.floor(sr / 1400);   // ~F6
+  const tauMax = Math.floor(sr / 65);     // ~C2
+  const W = buf.length - tauMax;
+  if (!yinBuf || yinBuf.length < tauMax + 2) yinBuf = new Float32Array(tauMax + 2);
+  const d = yinBuf;
+
+  for (let tau = 1; tau <= tauMax; tau++) {
+    let s = 0;
+    for (let j = 0; j < W; j++) { const x = buf[j] - buf[j + tau]; s += x * x; }
+    d[tau] = s;
+  }
+  d[0] = 1;
+  let run = 0;
+  for (let tau = 1; tau <= tauMax; tau++) { run += d[tau]; d[tau] = run ? d[tau] * tau / run : 1; }
+
+  let tau = -1;
+  for (let tt = tauMin; tt <= tauMax; tt++) {
+    if (d[tt] < 0.15) { while (tt + 1 <= tauMax && d[tt + 1] < d[tt]) tt++; tau = tt; break; }
+  }
+  if (tau < 0) return { f: 0, rms, clarity: 0 };
+
+  let better = tau;
+  if (tau > 1 && tau < tauMax) {
+    const a = d[tau - 1], b = d[tau], c = d[tau + 1], den = a + c - 2 * b;
+    if (den !== 0) better = tau + 0.5 * (a - c) / den;
+  }
+  return { f: sr / better, rms, clarity: 1 - d[tau] };
+}
+
+/* ---------- mic start / stop ---------- */
+function renderMicBtn() {
+  $('micBtn').textContent = t(running ? 'mic_stop' : 'mic_start');
+  $('micBtn').classList.toggle('stop', running);
+}
+async function startMic() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setStatus('err_noapi', null, true); return; }
+  if (!window.isSecureContext) { setStatus('err_insecure', null, true); return; }
+  try {
+    ensureCtx();
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      });
+    } catch (e1) {
+      if (e1 && (e1.name === 'OverconstrainedError' || e1.name === 'TypeError')) {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });   // some devices reject detailed constraints
+      } else throw e1;
+    }
+    if (ctx.state !== 'running') await ctx.resume();
+    source = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 4096;
+    analyser.smoothingTimeConstant = 0.55;
+    analyser.minDecibels = -100; analyser.maxDecibels = -15;
+    source.connect(analyser);
+    timeBuf = new Float32Array(analyser.fftSize);
+    freqBuf = new Float32Array(analyser.frequencyBinCount);
+    running = true;
+    renderMicBtn();
+    $('led').classList.add('on'); $('recBtn').disabled = false;
+    if (!recorder || recorder.state !== 'recording') setRecHint('rec_hint1');
+    const dev = (stream.getAudioTracks()[0] || {}).label || '';
+    setStatus('st_analyzing', { dev: dev || t('dev_default'), sr: ctx.sampleRate });
+    quietFrames = 0; unvoicedFrames = 0;
+    loop();
+  } catch (e) {
+    const n = (e && e.name) || 'Error';
+    if (stream) { stream.getTracks().forEach(tr => tr.stop()); stream = null; }
+    const key = 'err_' + n;
+    if (I18N[LANG][key] !== undefined) setStatus(key, null, true);
+    else setStatus('err_generic', { n, m: (e && e.message) || '' }, true);
+  }
+}
+function stopMic() {
+  running = false; cancelAnimationFrame(raf);
+  if (judge.on) stopJudge('j_micoff');
+  if (recorder && recorder.state === 'recording') recorder.stop();
+  if (stream) stream.getTracks().forEach(tr => tr.stop());
+  if (source) source.disconnect();
+  stream = source = analyser = null;
+  renderMicBtn();
+  $('led').classList.remove('on'); $('recBtn').disabled = true;
+  recentF = []; showPitch(0, false);
+  $('lvl').style.width = '0%'; $('lvlTxt').textContent = '— dBFS';
+  $('lvlHint').textContent = t('hint_idle'); $('lvlHint').className = 'lvlhint';
+  setStatus('st_stopped');
+  drawSpectrum(0);
+}
+
+$('micBtn').onclick = () => running ? stopMic() : startMic();
+document.addEventListener('keydown', e => {
+  if (e.code === 'Escape' && !$('guide').hidden) { closeGuide(); return; }
+  if (e.code === 'Space' && !['INPUT','SELECT','BUTTON','AUDIO','A'].includes(document.activeElement.tagName) && $('guide').hidden) {
+    e.preventDefault(); running ? stopMic() : startMic();
+  }
+});
+$('a4').onchange = e => { A4 = +e.target.value; updateVoiceRange(); buildRootOptions(); };
+
+/* ---------- main loop ---------- */
+function loop() {
+  if (!running) return;
+  raf = requestAnimationFrame(loop);
+  analyser.getFloatTimeDomainData(timeBuf);
+  analyser.getFloatFrequencyData(freqBuf);
+
+  const r = detectPitch(timeBuf, ctx.sampleRate);
+  const db = 20 * Math.log10(Math.max(r.rms, 1e-6));
+  $('lvl').style.width = clamp((db - LVL_MIN) / -LVL_MIN * 100, 0, 100) + '%';
+  $('lvlTxt').textContent = (db < -90 ? '-∞' : db.toFixed(1)) + ' dBFS';
+
+  const voiced = r.f > 0 && r.clarity > 0.8;
+  const hint = $('lvlHint');
+  if (db < -75) { quietFrames++; unvoicedFrames = 0; }
+  else { quietFrames = 0; unvoicedFrames = (r.rms >= gateRms && !voiced) ? unvoicedFrames + 1 : 0; }
+  if (quietFrames > 90) { hint.textContent = t('hint_none'); hint.className = 'lvlhint warn'; }
+  else if (db < gateDb && db >= -75 && !voiced && quietFrames === 0 && db > gateDb - 12) { hint.textContent = t('hint_small'); hint.className = 'lvlhint warn'; }
+  else if (unvoicedFrames > 60) { hint.textContent = t('hint_unvoiced'); hint.className = 'lvlhint warn'; }
+  else { hint.textContent = voiced ? t('hint_ok') : t('hint_sound'); hint.className = 'lvlhint'; }
+
+  if (voiced) { recentF.push(r.f); if (recentF.length > 5) recentF.shift(); silentFrames = 0; }
+  else if (++silentFrames > 8) recentF = [];
+
+  const f = recentF.length ? median(recentF) : 0;
+  showPitch(f, voiced);
+
+  history.push(voiced && f ? freqToMidi(f) : null);
+  if (history.length > HIST_LEN) history.shift();
+
+  if (voiced && f) trackHold(f);
+  judgeTick(voiced ? f : 0);
+  updateFormant(voiced);
+  drawHistory();
+  drawSpectrum(voiced ? f : 0);
+}
+
+/* ---------- readouts ---------- */
+function showPitch(f, live) {
+  const noteEl = $('note'), needle = $('needle');
+  if (!f) {
+    noteEl.innerHTML = '—'; noteEl.classList.add('idle'); noteEl.style.color = '';
+    $('hz').innerHTML = '— <small>Hz</small>'; $('cents').textContent = t('cents_idle');
+    needle.style.opacity = 0; $('vMark').style.opacity = 0;
+    $('vPos').textContent = t('vpos_idle'); $('bandTxt').textContent = t('band_label', { b: '—' });
+    return;
+  }
+  const m = freqToMidi(f), cents = Math.round((m - Math.round(m)) * 100);
+  const [n, o] = splitName(m);
+  noteEl.innerHTML = `${n}<span class="oct">${o}</span>`;
+  noteEl.classList.toggle('idle', !live);
+  noteEl.style.color = live ? centsColor(cents) : '';
+  $('hz').innerHTML = `${f.toFixed(1)} <small>Hz</small>`;
+  $('cents').textContent = t('cents_fmt', { c: (cents > 0 ? '+' : '') + cents, f: midiToFreq(Math.round(m)).toFixed(1) });
+  needle.style.opacity = live ? 1 : .35;
+  needle.style.left = (50 + clamp(cents, -50, 50)) + '%';
+  needle.style.background = centsColor(cents); needle.style.color = centsColor(cents);
+
+  const [lo, hi] = VOICES[$('voice').value];
+  const vmin = lo - 6, vmax = hi + 6;
+  const mk = $('vMark');
+  mk.style.opacity = 1; mk.style.left = clamp((m - vmin) / (vmax - vmin) * 100, 0, 100) + '%';
+  let pos;
+  if (m < lo - .5) pos = 'vpos_below';
+  else if (m > hi + .5) pos = 'vpos_above';
+  else { const u = (m - lo) / (hi - lo); pos = u < 1/3 ? 'vpos_low' : u < 2/3 ? 'vpos_mid' : 'vpos_high'; }
+  $('vPos').textContent = t(pos);
+
+  $('bandTxt').textContent = t('band_label', { b: t(f < 200 ? 'band_low' : f < 500 ? 'band_midlow' : f < 2000 ? 'band_mid' : 'band_high') });
+}
+
+function trackHold(f) {
+  const n = Math.round(freqToMidi(f));
+  if (n === stableNote) stableCount++; else { stableNote = n; stableCount = 1; }
+  if (stableCount < 5) return;
+  let changed = false;
+  if (maxF === null || f > maxF) { maxF = f; changed = true; }
+  if (minF === null || f < minF) { minF = f; changed = true; }
+  if (changed) renderHold();
+}
+function renderHold() {
+  if (maxF === null) {
+    $('maxN').textContent = $('minN').textContent = '—';
+    $('maxH').textContent = $('minH').textContent = '— Hz';
+    $('spanTxt').textContent = t('span_none'); return;
+  }
+  $('maxN').textContent = midiName(freqToMidi(maxF)); $('maxH').textContent = maxF.toFixed(1) + ' Hz';
+  $('minN').textContent = midiName(freqToMidi(minF)); $('minH').textContent = minF.toFixed(1) + ' Hz';
+  const semis = Math.round(freqToMidi(maxF)) - Math.round(freqToMidi(minF));
+  $('spanTxt').textContent = t('span', { s: semis, o: Math.floor(semis / 12), r: semis % 12 });
+}
+$('resetHold').onclick = () => { maxF = minF = null; stableNote = null; stableCount = 0; renderHold(); };
+
+function updateFormant(voiced) {
+  let total = 0, band = 0;
+  if (voiced) {
+    const binHz = ctx.sampleRate / analyser.fftSize;
+    for (let i = 1; i < freqBuf.length; i++) {
+      const hz = i * binHz; if (hz < 80) continue; if (hz > 5000) break;
+      const p = Math.pow(10, freqBuf[i] / 10);
+      total += p; if (hz >= 2500 && hz <= 3500) band += p;
+    }
+  }
+  let pct = 0;
+  if (voiced && total > 0 && band > 0) pct = clamp((10 * Math.log10(band / total) + 32) / 26 * 100, 0, 100);
+  fmtSmooth = voiced ? fmtSmooth * .8 + pct * .2 : fmtSmooth * .9;
+  $('fmt').style.width = fmtSmooth + '%';
+  $('fmtTxt').textContent = !voiced && fmtSmooth < 2 ? '—' :
+    t(fmtSmooth < 33 ? 'fmt_weak' : fmtSmooth < 66 ? 'fmt_mid' : 'fmt_strong');
+}
+
+/* ---------- voice range ---------- */
+function updateVoiceRange() {
+  const [lo, hi] = VOICES[$('voice').value];
+  const vmin = lo - 6, vmax = hi + 6;
+  $('vIn').style.left = ((lo - vmin) / (vmax - vmin) * 100) + '%';
+  $('vIn').style.width = ((hi - lo) / (vmax - vmin) * 100) + '%';
+  $('vLo').textContent = `${midiName(lo)} · ${midiToFreq(lo).toFixed(0)}Hz`;
+  $('vHi').textContent = `${midiName(hi)} · ${midiToFreq(hi).toFixed(0)}Hz`;
+  drawHistory();
+}
+$('voice').onchange = () => { updateVoiceRange(); if (!judge.on) { setDefaultRoot(); } };
+
+/* ---------- pitch history canvas ---------- */
+function lastVoicedMidi() {
+  for (let i = history.length - 1; i >= Math.max(0, history.length - 40); i--) if (history[i] !== null) return history[i];
+  return null;
+}
+function targetShown(tg) {
+  if (!judge.anyOct) return tg;
+  const last = lastVoicedMidi();
+  return last === null ? tg : tg + 12 * Math.round((last - tg) / 12);
+}
+function drawHistory() {
+  const W = histCv.width, H = histCv.height, dpr = window.devicePixelRatio || 1;
+  if (!W) return;
+  const [lo, hi] = VOICES[$('voice').value];
+  const mMin = lo - 5, mMax = hi + 5;
+  const padL = 48 * dpr;
+  const y = m => H - (m - mMin) / (mMax - mMin) * H;
+  hctx.clearRect(0, 0, W, H);
+
+  hctx.fillStyle = 'rgba(79,209,197,.06)';
+  hctx.fillRect(padL, y(hi), W - padL, y(lo) - y(hi));
+
+  if (judge.on && judge.idx < judge.seq.length) {
+    const tg = targetShown(judge.seq[judge.idx]), tol = judge.tol / 100;
+    const yt = y(clamp(tg, mMin, mMax));
+    hctx.fillStyle = 'rgba(255,255,255,.09)';
+    hctx.fillRect(padL, y(clamp(tg + tol, mMin, mMax)), W - padL, y(clamp(tg - tol, mMin, mMax)) - y(clamp(tg + tol, mMin, mMax)));
+    hctx.strokeStyle = 'rgba(255,255,255,.7)'; hctx.lineWidth = 1.5 * dpr; hctx.setLineDash([6 * dpr, 4 * dpr]);
+    hctx.beginPath(); hctx.moveTo(padL, yt); hctx.lineTo(W, yt); hctx.stroke();
+    hctx.setLineDash([]); hctx.lineWidth = 1;
+  }
+
+  hctx.font = `${10 * dpr}px ui-monospace,Menlo,monospace`; hctx.textBaseline = 'middle';
+  for (let m = Math.ceil(mMin); m <= mMax; m++) {
+    const yy = Math.round(y(m)) + .5, pc = ((m % 12) + 12) % 12;
+    const isC = pc === 0, natural = [0,2,4,5,7,9,11].includes(pc);
+    hctx.strokeStyle = isC ? 'rgba(255,255,255,.16)' : natural ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.025)';
+    hctx.beginPath(); hctx.moveTo(padL, yy); hctx.lineTo(W, yy); hctx.stroke();
+    if (natural) { hctx.fillStyle = isC ? '#c9ced8' : '#5a616d'; hctx.fillText(midiName(m), 6 * dpr, yy); }
+  }
+
+  const step = (W - padL) / (HIST_LEN - 1);
+  hctx.lineWidth = 3 * dpr; hctx.lineCap = 'round';
+  for (let i = 1; i < HIST_LEN; i++) {
+    const a = history[i - 1], b = history[i];
+    if (a === null || b === null || Math.abs(a - b) > 2) continue;
+    const c = (b - Math.round(b)) * 100;
+    hctx.strokeStyle = centsColor(c);
+    hctx.beginPath();
+    hctx.moveTo(padL + (i - 1) * step, y(clamp(a, mMin, mMax)));
+    hctx.lineTo(padL + i * step, y(clamp(b, mMin, mMax)));
+    hctx.stroke();
+  }
+  const last = history[HIST_LEN - 1];
+  if (last !== null) {
+    hctx.fillStyle = '#fff'; hctx.beginPath();
+    hctx.arc(W - 4 * dpr, y(clamp(last, mMin, mMax)), 4 * dpr, 0, Math.PI * 2); hctx.fill();
+  }
+}
+
+/* ---------- spectrum canvas ---------- */
+const xOfHz = (hz, W, padL) => padL + Math.log(hz / SPEC_MIN) / Math.log(SPEC_MAX / SPEC_MIN) * (W - padL);
+function drawSpectrum(f0) {
+  const W = specCv.width, H = specCv.height, dpr = window.devicePixelRatio || 1;
+  if (!W) return;
+  const padL = 4 * dpr, padB = 20 * dpr, plotH = H - padB;
+  sctx.clearRect(0, 0, W, H);
+
+  const bands = [[100,200,'rgba(107,140,255,.10)'],[500,2000,'rgba(79,209,197,.08)'],[2500,3500,'rgba(246,173,85,.13)']];
+  for (const [a, b, c] of bands) { sctx.fillStyle = c; const x1 = xOfHz(a, W, padL), x2 = xOfHz(b, W, padL); sctx.fillRect(x1, 0, x2 - x1, plotH); }
+
+  sctx.font = `${10 * dpr}px ui-monospace,Menlo,monospace`; sctx.textAlign = 'center'; sctx.textBaseline = 'top';
+  for (const hz of [50,100,200,300,500,1000,2000,3000,5000,8000]) {
+    const x = Math.round(xOfHz(hz, W, padL)) + .5;
+    sctx.strokeStyle = 'rgba(255,255,255,.06)'; sctx.beginPath(); sctx.moveTo(x, 0); sctx.lineTo(x, plotH); sctx.stroke();
+    sctx.fillStyle = '#5a616d'; sctx.fillText(hz >= 1000 ? hz / 1000 + 'k' : hz, clamp(x, 12 * dpr, W - 12 * dpr), plotH + 5 * dpr);
+  }
+
+  if (analyser && running) {
+    const binHz = ctx.sampleRate / analyser.fftSize;
+    const barW = 3 * dpr, gap = 1 * dpr;
+    const grad = sctx.createLinearGradient(padL, 0, W, 0);
+    grad.addColorStop(0, '#6b8cff'); grad.addColorStop(.45, '#4fd1c5'); grad.addColorStop(.75, '#f6ad55'); grad.addColorStop(1, '#fc8181');
+    sctx.fillStyle = grad;
+    const logSpan = Math.log(SPEC_MAX / SPEC_MIN);
+    for (let x = padL; x < W; x += barW + gap) {
+      const h1 = SPEC_MIN * Math.exp((x - padL) / (W - padL) * logSpan);
+      const h2 = SPEC_MIN * Math.exp((x + barW - padL) / (W - padL) * logSpan);
+      let i1 = Math.floor(h1 / binHz), i2 = Math.max(i1, Math.floor(h2 / binHz));
+      let mx = -200;
+      for (let i = i1; i <= i2 && i < freqBuf.length; i++) if (freqBuf[i] > mx) mx = freqBuf[i];
+      const v = clamp((mx - analyser.minDecibels) / (analyser.maxDecibels - analyser.minDecibels), 0, 1);
+      const h = v * plotH;
+      if (h > 0) sctx.fillRect(x, plotH - h, barW, h);
+    }
+  }
+
+  if (f0) {
+    for (let k = 1; k * f0 <= SPEC_MAX; k++) {
+      const x = xOfHz(k * f0, W, padL);
+      sctx.strokeStyle = k === 1 ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.22)';
+      sctx.lineWidth = (k === 1 ? 2 : 1) * dpr;
+      sctx.setLineDash(k === 1 ? [] : [4 * dpr, 4 * dpr]);
+      sctx.beginPath(); sctx.moveTo(x, 0); sctx.lineTo(x, plotH); sctx.stroke();
+      if (k <= 6) { sctx.fillStyle = k === 1 ? '#fff' : '#8891a1'; sctx.textBaseline = 'top'; sctx.fillText(k === 1 ? 'F0' : 'H' + k, x, 4 * dpr); }
+    }
+    sctx.setLineDash([]); sctx.lineWidth = 1;
+  }
+}
+
+/* ---------- judge mode ---------- */
+const SEQS = {
+  single: [0], five: [0,2,4,5,7,5,4,2,0], scale: [0,2,4,5,7,9,11,12],
+  scale2: [0,2,4,5,7,9,11,12,11,9,7,5,4,2,0], arp: [0,4,7,12,7,4,0]
+};
+const GRADES = {
+  perfect: { t: 'PERFECT', c: '#68d391', p: 100 },
+  great:   { t: 'GREAT',   c: '#4fd1c5', p: 85 },
+  good:    { t: 'GOOD',    c: '#f6e05e', p: 70 },
+  miss:    { t: 'MISS',    c: '#fc8181', p: 0 }
+};
+const judge = { on: false, seq: [], idx: 0, tol: 25, hold: 1.5, anyOct: true, inTime: 0, devs: [], results: [], muteUntil: 0, lastTs: 0, toneTimer: 0 };
+let jDetailS = { key: 'j_ready_detail', p: {} }, jSumS = null, jStatusS = { key: 'j_wait', p: {} }, jDone = false;
+
+function setJDetail(key, p) { jDetailS = { key, p: p || {} }; $('jDetail').textContent = t(key, p); }
+function setJStatus(key, p) { jStatusS = { key, p: p || {} }; $('jStatus').textContent = t(key, p); }
+function setJSum(key, p) { jSumS = key ? { key, p: p || {} } : null; $('jSum').textContent = key ? t(key, p) : ''; }
+
+function buildRootOptions() {
+  const sel = $('jRoot'), prev = sel.value; sel.innerHTML = '';
+  for (let m = 36; m <= 72; m++) { const o = document.createElement('option'); o.value = m; o.textContent = midiName(m); sel.appendChild(o); }
+  if (prev) sel.value = prev;
+}
+function setDefaultRoot() { const [lo] = VOICES[$('voice').value]; $('jRoot').value = Math.floor((lo + 8) / 12) * 12; }
+
+function playTone(midi, dur = 1) {
+  ensureCtx();
+  const tm = ctx.currentTime + 0.02;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'triangle'; o.frequency.value = midiToFreq(midi);
+  g.gain.setValueAtTime(0.0001, tm);
+  g.gain.exponentialRampToValueAtTime(0.25, tm + 0.03);
+  g.gain.setValueAtTime(0.25, tm + dur - 0.15);
+  g.gain.exponentialRampToValueAtTime(0.0001, tm + dur);
+  o.connect(g).connect(ctx.destination); o.start(tm); o.stop(tm + dur + 0.02);
+  judge.muteUntil = performance.now() + (dur + 0.25) * 1000;   // ignore the mic while the reference tone sounds
+}
+
+function renderChips() {
+  const box = $('jChips'); box.innerHTML = '';
+  judge.seq.forEach((m, i) => {
+    const r = judge.results[i], c = document.createElement('div');
+    c.className = 'chip' + (r ? ' ' + r.grade : '') + (judge.on && i === judge.idx ? ' cur' : '');
+    c.innerHTML = midiName(m) + `<small>${r ? (r.grade === 'miss' ? 'MISS' : (r.mean > 0 ? '+' : '') + Math.round(r.mean) + 'c') : '·'}</small>`;
+    box.appendChild(c);
+  });
+}
+function showTarget() {
+  const m = judge.seq[judge.idx];
+  $('jTarget').textContent = midiName(m);
+  setJStatus('j_progress', { i: judge.idx + 1, n: judge.seq.length, hz: midiToFreq(m).toFixed(1) });
+  $('jProg').style.width = '0%'; $('jDir').textContent = '';
+  renderChips(); drawHistory();
+}
+function resetNote() { judge.inTime = 0; judge.devs = []; }
+function updateScore() {
+  if (!judge.results.length) { $('jScore').textContent = '—'; return; }
+  const s = judge.results.reduce((a, r) => a + GRADES[r.grade].p, 0) / judge.results.length;
+  $('jScore').textContent = Math.round(s);
+}
+function flash(gradeKey, key, p) {
+  const el = $('jFlash'), g = GRADES[gradeKey];
+  el.textContent = g.t; el.style.color = g.c;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+  setJDetail(key, p);
+}
+function renderJudgeButton() {
+  $('jStart').textContent = t(judge.on ? 'j_end' : 'j_start');
+  $('jStart').classList.toggle('stop', judge.on);
+}
+function devCents(f, target) {
+  let d = (freqToMidi(f) - target) * 100;
+  if (judge.anyOct) d = ((d % 1200) + 1800) % 1200 - 600;   // octave-agnostic: wrap to ±600c
+  return d;
+}
+
+async function startJudge() {
+  if (!running) { await startMic(); if (!running) return; }
+  judge.seq = SEQS[$('jMode').value].map(i => +$('jRoot').value + i);
+  judge.tol = +$('jTol').value; judge.hold = +$('jHold').value; judge.anyOct = $('jAnyOct').checked;
+  judge.idx = 0; judge.results = []; resetNote(); jDone = false;
+  judge.on = true; judge.lastTs = performance.now(); judge.muteUntil = 0;
+  renderJudgeButton(); $('jSkip').disabled = false;
+  const fl = $('jFlash'); fl.textContent = 'GO'; fl.style.color = 'var(--text)';
+  setJDetail('j_go_detail', { tol: judge.tol, hold: judge.hold });
+  setJSum(null); updateScore(); showTarget();
+  if ($('jAuto').checked) playTone(judge.seq[0]);
+}
+function stopJudge(msgKey) {
+  judge.on = false; clearTimeout(judge.toneTimer);
+  renderJudgeButton(); $('jSkip').disabled = true;
+  $('jProg').style.width = '0%'; $('jDir').textContent = '';
+  setJStatus(msgKey || 'j_wait');
+  renderChips(); drawHistory();
+}
+
+function finishNote(skipped) {
+  const m = judge.seq[judge.idx];
+  let res;
+  if (skipped || !judge.devs.length) {
+    res = { midi: m, grade: 'miss', abs: null, mean: 0 };
+    flash('miss', 'j_skipped', { note: midiName(m) });
+  } else {
+    const n = judge.devs.length;
+    const abs = judge.devs.reduce((a, b) => a + Math.abs(b), 0) / n;
+    const mean = judge.devs.reduce((a, b) => a + b, 0) / n;
+    const grade = abs <= Math.min(7, judge.tol * .4) ? 'perfect' : abs <= Math.min(15, judge.tol * .7) ? 'great' : 'good';
+    res = { midi: m, grade, abs, mean };
+    const tend = mean > 4 ? 'tend_sharp' : mean < -4 ? 'tend_flat' : 'tend_ok';
+    flash(grade, 'j_result', { note: midiName(m), abs: abs.toFixed(0), tend });
+  }
+  judge.results.push(res); updateScore();
+  judge.idx++; resetNote();
+
+  if (judge.idx >= judge.seq.length) { finishSession(); return; }
+  showTarget();
+  judge.muteUntil = performance.now() + 450;
+  if ($('jAuto').checked) {
+    const next = judge.seq[judge.idx];
+    judge.toneTimer = setTimeout(() => { if (judge.on) playTone(next); }, 450);
+  }
+}
+function finishSession() {
+  const cnt = k => judge.results.filter(r => r.grade === k).length;
+  const sung = judge.results.filter(r => r.grade !== 'miss');
+  const mean = sung.length ? sung.reduce((a, r) => a + r.mean, 0) / sung.length : 0;
+  const tend = !sung.length ? null : mean > 4 ? 'sum_sharp' : mean < -4 ? 'sum_flat' : 'sum_ok';
+  setJSum('j_summary', { a: cnt('perfect'), b: cnt('great'), c: cnt('good'), d: cnt('miss'), tend });
+  $('jTarget').textContent = t('j_done'); jDone = true;
+  stopJudge('j_done_status');
+}
+
+function judgeTick(f) {
+  const now = performance.now();
+  const dt = Math.min(0.1, (now - judge.lastTs) / 1000); judge.lastTs = now;
+  if (!judge.on || judge.idx >= judge.seq.length) return;
+  const dir = $('jDir');
+  if (now < judge.muteUntil) { dir.textContent = t('j_hear'); dir.style.color = 'var(--muted)'; return; }
+
+  const target = judge.seq[judge.idx];
+  if (f) {
+    const dev = devCents(f, target);
+    if (Math.abs(dev) <= judge.tol) {
+      judge.inTime += dt; judge.devs.push(dev);
+      dir.textContent = t('j_good'); dir.style.color = 'var(--good)';
+    } else {
+      judge.inTime = Math.max(0, judge.inTime - dt * .5);
+      if (judge.inTime === 0) judge.devs = [];
+      const semis = Math.abs(dev) / 100, octOff = Math.round(dev / 1200);
+      if (!judge.anyOct && octOff !== 0 && Math.abs(dev - octOff * 1200) <= judge.tol) {
+        dir.textContent = t(octOff > 0 ? 'j_oct_up' : 'j_oct_down');
+      } else {
+        const amt = semis >= 1 ? t('amt_semi', { n: Math.round(semis) }) : t('amt_cents', { n: Math.round(Math.abs(dev)) });
+        dir.textContent = t(dev < 0 ? 'j_higher' : 'j_lower', { a: amt });
+      }
+      dir.style.color = 'var(--warn)';
+    }
+  } else {
+    judge.inTime = Math.max(0, judge.inTime - dt * .5);
+    dir.textContent = t('j_silence'); dir.style.color = 'var(--muted)';
+  }
+  $('jProg').style.width = clamp(judge.inTime / judge.hold * 100, 0, 100) + '%';
+  if (judge.inTime >= judge.hold) finishNote(false);
+}
+
+$('jStart').onclick = () => judge.on ? stopJudge('j_stopped') : startJudge();
+$('jSkip').onclick = () => { if (judge.on) finishNote(true); };
+$('jTone').onclick = () => playTone(judge.on ? judge.seq[judge.idx] : +$('jRoot').value);
+
+/* ---------- recording ---------- */
+let recorder = null, chunks = [], recUrl = null, recStart = 0, recTimer = 0, recHintKey = 'rec_hint0';
+const fmtTime = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+function setRecHint(key) { recHintKey = key; $('recHint').textContent = t(key); }
+function renderRecBtn() {
+  const rec = recorder && recorder.state === 'recording';
+  $('recBtn').textContent = t(rec ? 'rec_stop' : 'rec_btn');
+  $('recBtn').classList.toggle('active', !!rec);
+}
+$('recBtn').onclick = () => {
+  if (recorder && recorder.state === 'recording') { recorder.stop(); return; }
+  if (!stream) return;
+  if (!window.MediaRecorder) { setRecHint('rec_nomr'); return; }
+  const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'].find(m => MediaRecorder.isTypeSupported(m)) || '';
+  recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+  chunks = [];
+  recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  recorder.onstop = () => {
+    clearInterval(recTimer);
+    const type = recorder.mimeType || mime || 'audio/webm';
+    const blob = new Blob(chunks, { type });
+    if (recUrl) URL.revokeObjectURL(recUrl);
+    recUrl = URL.createObjectURL(blob);
+    const ext = type.includes('mp4') ? 'm4a' : type.includes('ogg') ? 'ogg' : 'webm';
+    const d = new Date(), stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+    $('player').src = recUrl; $('player').style.display = 'block';
+    $('dlBtn').href = recUrl; $('dlBtn').download = `vocal_${stamp}.${ext}`; $('dlBtn').style.display = 'inline-block';
+    renderRecBtn(); setRecHint('rec_done');
+  };
+  recorder.start(250);
+  recStart = performance.now();
+  $('recTime').textContent = '00:00';
+  recTimer = setInterval(() => { $('recTime').textContent = fmtTime((performance.now() - recStart) / 1000); }, 250);
+  renderRecBtn(); setRecHint('rec_rec');
+};
+
+/* ---------- metronome ---------- */
+let metroOn = false, metroTimer = 0, nextTime = 0, beatIdx = 0, bpm = 90, beatsPerBar = 4, queue = [], metroRaf = 0, taps = [];
+function renderMetBtn() { $('metBtn').textContent = t(metroOn ? 'met_stop' : 'met_start'); }
+function buildDots() {
+  $('dots').innerHTML = '';
+  for (let i = 0; i < beatsPerBar; i++) { const d = document.createElement('i'); if (i === 0) d.classList.add('acc'); $('dots').appendChild(d); }
+}
+function setBpm(v) { bpm = clamp(Math.round(v), 40, 208); $('bpm').value = bpm; $('bpmTxt').textContent = bpm; }
+function click(time, accent) {
+  const vol = $('vol').value / 100; if (vol <= 0) return;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'square'; o.frequency.value = accent ? 1760 : 1100;
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(0.35 * vol * (accent ? 1 : .6) + 0.0001, time + 0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + 0.045);
+  o.connect(g).connect(ctx.destination); o.start(time); o.stop(time + 0.06);
+}
+function scheduler() {
+  while (nextTime < ctx.currentTime + 0.12) {
+    click(nextTime, beatIdx === 0);
+    queue.push({ beat: beatIdx, time: nextTime });
+    nextTime += 60 / bpm;
+    beatIdx = (beatIdx + 1) % beatsPerBar;
+  }
+}
+function metroVisual() {
+  if (!metroOn) return;
+  metroRaf = requestAnimationFrame(metroVisual);
+  let cur = null;
+  while (queue.length && queue[0].time <= ctx.currentTime) cur = queue.shift();
+  if (cur) {
+    [...$('dots').children].forEach((d, i) => d.classList.toggle('on', i === cur.beat));
+    setTimeout(() => { const d = $('dots').children[cur.beat]; if (d) d.classList.remove('on'); }, 110);
+  }
+}
+$('metBtn').onclick = () => {
+  if (metroOn) {
+    metroOn = false; clearInterval(metroTimer); cancelAnimationFrame(metroRaf); queue = [];
+    renderMetBtn(); [...$('dots').children].forEach(d => d.classList.remove('on')); return;
+  }
+  ensureCtx(); metroOn = true; beatIdx = 0; queue = [];
+  nextTime = ctx.currentTime + 0.06;
+  metroTimer = setInterval(scheduler, 25); scheduler(); metroVisual();
+  renderMetBtn();
+};
+$('bpm').oninput = e => setBpm(+e.target.value);
+$('bpmUp').onclick = () => setBpm(bpm + 1);
+$('bpmDown').onclick = () => setBpm(bpm - 1);
+$('beats').onchange = e => { beatsPerBar = +e.target.value; beatIdx = 0; buildDots(); };
+$('tap').onclick = () => {
+  const now = performance.now();
+  taps = taps.filter(x => now - x < 2500); taps.push(now);
+  if (taps.length >= 2) { const iv = (taps[taps.length - 1] - taps[0]) / (taps.length - 1); setBpm(60000 / iv); }
+};
+
+/* ---------- guide ---------- */
+function openGuide() { $('guideBody').innerHTML = t('guide_html'); $('guide').hidden = false; $('guide').scrollTop = 0; $('guideClose').focus(); }
+function closeGuide() { $('guide').hidden = true; $('guideBtn').focus(); }
+$('guideBtn').onclick = openGuide;
+$('guideClose').onclick = closeGuide;
+$('guide').addEventListener('click', e => { if (e.target === $('guide')) closeGuide(); });
+
+/* ---------- apply language ---------- */
+function applyI18n() {
+  document.documentElement.lang = LANG;
+  document.title = t('doc_title');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-label]').forEach(el => { el.label = t(el.dataset.i18nLabel); });
+  [...$('jHold').options].forEach(o => { o.textContent = t('sec', { n: o.value }); });
+}
+function refreshLang() {
+  applyI18n();
+  renderMicBtn(); renderStatus(); renderJudgeButton(); renderRecBtn(); renderMetBtn();
+  setRecHint(recHintKey);
+  setGate(); renderHold(); buildRootOptions(); updateVoiceRange();
+  setJDetail(jDetailS.key, jDetailS.p); setJStatus(jStatusS.key, jStatusS.p);
+  if (jSumS) setJSum(jSumS.key, jSumS.p);
+  if (judge.seq.length) { renderChips(); if (jDone) $('jTarget').textContent = t('j_done'); else if (judge.on) $('jTarget').textContent = midiName(judge.seq[judge.idx]); }
+  if (!running) { showPitch(0, false); $('lvlHint').textContent = t('hint_idle'); }
+  if (!$('guide').hidden) $('guideBody').innerHTML = t('guide_html');
+}
+$('lang').onchange = e => {
+  LANG = e.target.value; try { localStorage.setItem('va_lang', LANG); } catch (er) {}
+  refreshLang();
+};
+$('notation').onchange = e => {
+  NOTATION = e.target.value; try { localStorage.setItem('va_not', NOTATION); } catch (er) {}
+  refreshLang();
+};
+
+/* ---------- init ---------- */
+LANG = detectLang(); $('lang').value = LANG;
+try { const n = localStorage.getItem('va_not'); if (n === 'abc' || n === 'solfege') NOTATION = n; } catch (e) {}
+$('notation').value = NOTATION;
+try { const s = localStorage.getItem('va_sens'); if (s !== null) $('sens').value = s; } catch (e) {}
+$('sens').oninput = () => { setGate(); try { localStorage.setItem('va_sens', $('sens').value); } catch (e) {} };
+buildDots(); buildRootOptions(); setDefaultRoot();
+refreshLang();
+resizeAll();
+})();
+</script>
+</body>
+</html>
