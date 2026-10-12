@@ -4,7 +4,7 @@
 
 보컬 레슨용 도구 모음 — **음정 분석기**, **연습 플레이어**(키·템포·A–B 반복), 반주를 만드는 **MR Studio**. 앞의 둘은 설치 없이 iPhone Safari를 포함한 어떤 브라우저에서도 열려요.
 
-**열기:** https://ddossss.github.io/mr-studio/ (한국어 / 日本語 / English — 오른쪽 위에서 전환)
+**열기:** https://ddossss.github.io/vocal-lesson-kit/ (한국어 / 日本語 / English — 오른쪽 위에서 전환)
 
 ## 구성
 

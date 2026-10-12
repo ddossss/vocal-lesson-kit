@@ -4,7 +4,7 @@
 
 ボーカルレッスン用ツール集 — **音程アナライザー**、**練習プレーヤー**(キー・テンポ・A–Bリピート)、伴奏を作る **MR Studio**。前の2つはインストール不要で、iPhoneのSafariを含むどのブラウザでも開けます。
 
-**開く:** https://ddossss.github.io/mr-studio/ (日本語 / 한국어 / English — 右上で切り替え)
+**開く:** https://ddossss.github.io/vocal-lesson-kit/ (日本語 / 한국어 / English — 右上で切り替え)
 
 ## 内容
 

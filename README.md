@@ -4,7 +4,7 @@ English | [한국어](README.ko.md) | [日本語](README.ja.md)
 
 Tools for vocal lessons — a **pitch analyzer**, a **practice player** (key / tempo / A–B loop) and **MR Studio** for making backing tracks. The first two run in any browser, including iPhone Safari, with nothing to install.
 
-**Open it:** https://ddossss.github.io/mr-studio/ (English / 日本語 / 한국어 — switch in the top right)
+**Open it:** https://ddossss.github.io/vocal-lesson-kit/ (English / 日本語 / 한국어 — switch in the top right)
 
 ## What's inside
 
