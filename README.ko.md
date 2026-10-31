@@ -77,11 +77,21 @@ py -3.13 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 ```
 
+macOS(Apple Silicon):
+
+```sh
+brew install ffmpeg yt-dlp deno   # key shift: brew install ffmpeg-full
+uv venv --python 3.13 .venv
+uv pip install --python .venv/bin/python -r requirements-mac.txt
+```
+
+`run.command` 더블클릭. 키 조절은 ffmpeg 의 rubberband 필터가 필요 — Homebrew 기본 `ffmpeg` 에는 없고 `ffmpeg-full`(keg-only)에 있음, 설치돼 있으면 `run.command` 가 그것을 씀. PyTorch 는 CPU/MPS(Apple GPU).
+
 NVIDIA GPU 권장 (CPU만 있으면 곡당 수 분). 첫 실행 때 분리 모델(~0.9GB)을 `models/`에 자동 다운로드.
 
 ### 테스트
 
-`.venv\Scripts\python test_app.py` → `OK` (믹스·키·템포·구간, 세 언어 문구 일치를 검사)
+`.venv\Scripts\python test_app.py` (macOS: `.venv/bin/python test_app.py`) → `OK` (믹스·키·템포·구간, 세 언어 문구 일치를 검사)
 
 ## 저장소 구성
 

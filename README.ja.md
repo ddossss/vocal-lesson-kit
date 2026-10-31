@@ -77,11 +77,21 @@ py -3.13 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 ```
 
+macOS（Apple Silicon）:
+
+```sh
+brew install ffmpeg yt-dlp deno   # key shift: brew install ffmpeg-full
+uv venv --python 3.13 .venv
+uv pip install --python .venv/bin/python -r requirements-mac.txt
+```
+
+`run.command` をダブルクリック。キー変更には ffmpeg の rubberband フィルターが必要 — Homebrew の通常の `ffmpeg` にはなく `ffmpeg-full`（keg-only）にある。インストール済みなら `run.command` が使う。PyTorch は CPU/MPS（Apple GPU）。
+
 NVIDIA GPU推奨（CPUのみの場合、1曲あたり数分）。初回実行時に分離モデル(~0.9GB)を`models/`へ自動ダウンロード。
 
 ### テスト
 
-`.venv\Scripts\python test_app.py` → `OK`（ミックス・キー・テンポ・区間、3言語の文言の一致を検査）
+`.venv\Scripts\python test_app.py` (macOS: `.venv/bin/python test_app.py`) → `OK`（ミックス・キー・テンポ・区間、3言語の文言の一致を検査）
 
 ## リポジトリの構成
 
