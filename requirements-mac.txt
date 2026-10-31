@@ -1,0 +1,12 @@
+# macOS (Apple Silicon). Same as requirements.txt except PyTorch: no CUDA (+cu128) builds, and audio-separator 0.47.0
+# requires torch>=2.13 on macOS arm64, so these are the versions it resolved to (CPU/MPS).
+torch==2.15.0
+torchaudio==2.11.1
+torchvision==0.29.2
+audio-separator==0.47.0
+onnxruntime==1.30.0
+gradio==6.28.0
+soundfile==0.14.0
+audioread==3.1.0
+standard-aifc==3.13.0
+standard-sunau==3.13.0

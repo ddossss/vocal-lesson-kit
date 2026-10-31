@@ -77,11 +77,21 @@ py -3.13 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 ```
 
+macOS (Apple Silicon):
+
+```sh
+brew install ffmpeg yt-dlp deno   # key shift: brew install ffmpeg-full
+uv venv --python 3.13 .venv
+uv pip install --python .venv/bin/python -r requirements-mac.txt
+```
+
+Double-click `run.command`. Key shift needs ffmpeg's rubberband filter: Homebrew's plain `ffmpeg` lacks it, `ffmpeg-full` (keg-only) has it — `run.command` uses it when installed. PyTorch runs on CPU/MPS (Apple GPU).
+
 An NVIDIA GPU is recommended (CPU-only takes several minutes per song). On first run, the separation models (~0.9GB) are auto-downloaded to `models/`.
 
 ### Test
 
-`.venv\Scripts\python test_app.py` → `OK` (checks mixing, key, tempo, section and that all three languages have the same texts)
+`.venv\Scripts\python test_app.py` (macOS: `.venv/bin/python test_app.py`) → `OK` (checks mixing, key, tempo, section and that all three languages have the same texts)
 
 ## Repository layout
 
