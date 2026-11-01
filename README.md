@@ -13,7 +13,7 @@ Tools for vocal lessons — a **pitch analyzer**, a **practice player** (key / t
 | 🎤 Pitch analyzer | Phone / PC browser | Live pitch, note and cents from the mic, range hold, judge mode for male & female voices, recording, metronome |
 | 🎧 Practice player | Phone / PC browser | Open a song, change key (±12 semitones) and tempo (50–130%), loop a section with A–B repeat |
 | 📖 Guide | Browser | Getting started, iPhone Home Screen, lesson ideas, troubleshooting, a ready-to-send message (Japanese) |
-| 💻 MR Studio | Windows PC (GPU recommended) | Remove vocals from YouTube / your own audio, then set key, tempo and section → mp3 / wav |
+| 💻 MR Studio | Windows · Mac PC (GPU recommended) | Remove vocals from YouTube / your own audio, then set key, tempo and section → mp3 / wav |
 
 Typical flow: make a backing track in MR Studio on the PC → send the file to your phone (AirDrop, iCloud, LINE Keep…) → open it in the practice player, shift the key, slow it down and loop the hard part.
 
@@ -33,7 +33,7 @@ YouTube URL or your own audio file → remove vocals · adjust key (-5 to +5 sem
 
 ### Run
 
-Double-click `run.bat` → the app opens in your browser (http://127.0.0.1:7860)
+Double-click `run.bat` (Windows) or `run.command` (Mac) → the app opens in your browser (http://127.0.0.1:7860)
 
 ### Features
 
