@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:,">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pitch">
-<meta name="theme-color" content="#0a0c0f">
+<meta name="theme-color" content="#f5f7fb">
 <title>Vocal Analyzer</title>
 <style>
 :root{
@@ -155,16 +155,17 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
 .guide-body th,.guide-body td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
 .guide-body th{background:var(--panel2);font-weight:600}
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
-<body>
-<div class="wrap">
+<body class="analyzer-page" data-page="analyzer">
+<main id="main" class="wrap" tabindex="-1">
+<div class="page-heading"><h1 data-ui="analyzer"></h1><p data-ui="analyzerIntro"></p></div>
 
-  <header>
+  <div class="analyzer-toolbar">
     <div class="brand">
       <div class="led" id="led"></div>
       <div>
-        <h1>Vocal Pitch &amp; Frequency Analyzer</h1>
-        <div class="sub" id="status"></div>
+        <div class="sub" id="status" role="status"></div>
       </div>
     </div>
     <div class="controls">
@@ -188,14 +189,16 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
       <button class="btn" id="guideBtn" data-i18n="guide"></button>
       <button class="btn primary" id="micBtn"></button>
     </div>
-  </header>
+  </div>
 
   <div class="grid">
     <!-- Big readout -->
-    <section class="panel readout">
+    <section class="panel readout" data-ui-label="livePitch">
+      <h2 class="instrument-title" data-ui="livePitch"></h2>
       <div class="note idle" id="note">—</div>
       <div class="hz" id="hz">— <small>Hz</small></div>
       <div class="cents" id="cents"></div>
+      <p class="instrument-help" data-ui="micHelp"></p>
       <div class="meter">
         <div class="track"></div><div class="center"></div><div class="needle" id="needle"></div>
         <div class="ticks"><span>-50</span><span>-25</span><span>0</span><span>+25</span><span>+50</span></div>
@@ -204,7 +207,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
         <div class="row"><span data-i18n="level"></span><span id="lvlTxt">— dBFS</span></div>
         <div class="bar lvlbar"><i id="lvl"></i><b id="gateMark"></b></div>
         <div class="row" style="margin-top:12px"><span data-i18n="sens"></span><span id="gateTxt">—</span></div>
-        <input type="range" id="sens" min="0" max="100" value="70" style="width:100%">
+        <input type="range" id="sens" data-ui-label="sensitivity" min="0" max="100" value="70" style="width:100%">
         <div class="lvlhint" id="lvlHint"></div>
       </div>
     </section>
@@ -221,8 +224,8 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
       </section>
 
       <section class="panel">
-        <div class="label"><span data-i18n="voice_title"></span>
-          <select id="voice">
+        <div class="label"><span id="voiceLabel" data-i18n="voice_title"></span>
+          <select id="voice" aria-labelledby="voiceLabel">
             <optgroup data-i18n-label="grp_female">
               <option value="soprano" data-i18n="soprano"></option>
               <option value="mezzo" data-i18n="mezzo"></option>
@@ -251,7 +254,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
     <section class="panel full">
       <div class="label"><span data-i18n="j_title"></span> <span id="jStatus" style="letter-spacing:0;text-transform:none"></span></div>
       <div class="judge-ctrl">
-        <select id="jMode">
+        <select id="jMode" data-ui-label="exercise">
           <option value="single" data-i18n="j_mode_single"></option>
           <option value="five" data-i18n="j_mode_five" selected></option>
           <option value="scale" data-i18n="j_mode_scale"></option>
@@ -294,13 +297,13 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
     </section>
 
     <!-- Pitch history -->
-    <section class="panel full">
+    <section class="panel full chart-panel">
       <div class="label"><span data-i18n="hist_title"></span> <span class="legend"><span style="--c:var(--good)">±10c</span><span style="--c:var(--warn)">±25c</span><span style="--c:var(--bad)" data-i18n="hist_more"></span></span></div>
       <canvas id="hist"></canvas>
     </section>
 
     <!-- Spectrum -->
-    <section class="panel full">
+    <section class="panel full chart-panel">
       <div class="label"><span data-i18n="spec_title"></span>
         <span class="legend">
           <span style="--c:rgba(107,140,255,.6)" data-i18n="leg_low"></span>
@@ -329,17 +332,17 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
         <div class="label" data-i18n="met_title"></div>
         <div class="toolrow">
           <button class="btn" id="metBtn"></button>
-          <button class="btn small" id="bpmDown">−</button>
+          <button class="btn small" id="bpmDown" data-ui-label="slower">−</button>
           <div class="bpm" id="bpmTxt">90</div>
-          <button class="btn small" id="bpmUp">+</button>
-          <select id="beats"><option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option><option value="6">6/8</option></select>
+          <button class="btn small" id="bpmUp" data-ui-label="faster">+</button>
+          <select id="beats" data-ui-label="beats"><option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option><option value="6">6/8</option></select>
           <button class="btn small" id="tap">TAP</button>
         </div>
         <div class="toolrow" style="margin-top:12px">
           <span style="font-size:12px;color:var(--muted)">BPM</span>
-          <input type="range" id="bpm" min="40" max="208" value="90">
+          <input type="range" id="bpm" data-ui-label="bpm" min="40" max="208" value="90">
           <span style="font-size:12px;color:var(--muted)" data-i18n="vol"></span>
-          <input type="range" id="vol" min="0" max="100" value="60" style="max-width:110px">
+          <input type="range" id="vol" data-ui-label="volume" min="0" max="100" value="60" style="max-width:110px">
         </div>
         <div class="dots" id="dots"></div>
       </section>
@@ -347,7 +350,8 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-b
   </div>
 
   <div class="hint" data-i18n-html="foot"></div>
-</div>
+</main>
+<footer class="site-footer"></footer>
 
 <!-- Guide -->
 <div class="guide" id="guide" hidden>
@@ -1191,10 +1195,10 @@ const SEQS = {
   scale2: [0,2,4,5,7,9,11,12,11,9,7,5,4,2,0], arp: [0,4,7,12,7,4,0]
 };
 const GRADES = {
-  perfect: { t: 'PERFECT', c: '#68d391', p: 100 },
-  great:   { t: 'GREAT',   c: '#4fd1c5', p: 85 },
-  good:    { t: 'GOOD',    c: '#f6e05e', p: 70 },
-  miss:    { t: 'MISS',    c: '#fc8181', p: 0 }
+  perfect: { t: 'PERFECT', c: '#237a51', p: 100 },
+  great:   { t: 'GREAT',   c: '#3158d5', p: 85 },
+  good:    { t: 'GOOD',    c: '#856312', p: 70 },
+  miss:    { t: 'MISS',    c: '#bc3c4b', p: 0 }
 };
 const judge = { on: false, seq: [], idx: 0, tol: 25, hold: 1.5, anyOct: true, inTime: 0, devs: [], results: [], muteUntil: 0, lastTs: 0, toneTimer: 0 };
 let jDetailS = { key: 'j_ready_detail', p: {} }, jSumS = null, jStatusS = { key: 'j_wait', p: {} }, jDone = false;
@@ -1446,8 +1450,23 @@ $('tap').onclick = () => {
 };
 
 /* ---------- guide ---------- */
-function openGuide() { $('guideBody').innerHTML = t('guide_html'); $('guide').hidden = false; $('guide').scrollTop = 0; $('guideClose').focus(); }
-function closeGuide() { $('guide').hidden = true; $('guideBtn').focus(); }
+function openGuide() {
+  $('guideBody').innerHTML = t('guide_html'); $('guide').hidden = false; $('guide').scrollTop = 0;
+  document.querySelectorAll('main,.site-header,.site-footer,.skip-link').forEach(el=>el.inert=true);
+  document.body.style.overflow='hidden'; $('guideClose').focus();
+}
+function closeGuide() {
+  $('guide').hidden = true;
+  document.querySelectorAll('main,.site-header,.site-footer,.skip-link').forEach(el=>el.inert=false);
+  document.body.style.overflow=''; $('guideBtn').focus();
+}
+$('guide').addEventListener('keydown',e=>{
+  if(e.key!=='Tab')return;
+  const items=[...$('guide').querySelectorAll('button,a[href],input,select,[tabindex="0"]')].filter(el=>!el.disabled);
+  const first=items[0],last=items[items.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+});
 $('guideBtn').onclick = openGuide;
 $('guideClose').onclick = closeGuide;
 $('guide').addEventListener('click', e => { if (e.target === $('guide')) closeGuide(); });
@@ -1493,5 +1512,6 @@ refreshLang();
 resizeAll();
 })();
 </script>
+<script src="../ui.js"></script>
 </body>
 </html>

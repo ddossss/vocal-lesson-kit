@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Practice">
-<meta name="theme-color" content="#0a0c0f">
-<link rel="icon" href="data:,">
+<meta name="theme-color" content="#f5f7fb">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icon.png">
 <title>Practice Player</title>
 <style>
@@ -50,22 +50,25 @@ input[type=range]{width:100%;accent-color:var(--accent);height:32px;margin:6px 0
 footer{color:var(--dim);font-size:12px;margin-top:20px;text-align:center}
 footer a{color:var(--muted)}
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
-<body>
-<header>
-  <h1 data-i="title">Practice Player</h1>
-  <select id="lang" aria-label="Language"><option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option></select>
-</header>
-
-<div class="panel">
-  <input type="file" id="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.aac,.ogg" hidden>
+<body class="player-page" data-page="player">
+<select id="lang" aria-label="Language"><option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option></select>
+<main id="main" class="app-main" tabindex="-1">
+<div class="page-heading"><h1 data-i="title">Practice player</h1><p data-ui="playerIntro"></p></div>
+<div class="player-layout"><div class="player-primary">
+<div class="panel upload-panel">
+  <svg class="upload-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 21V5m-6 6 6-6 6 6M5 21v6h22v-6"/></svg>
+<h2 data-ui="audioSource"></h2>
+<input type="file" id="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.aac,.ogg" hidden>
   <button id="fileBtn" class="accent" data-i="open">Open audio</button>
-  <div id="fname" data-i="nofile"></div>
-  <div id="msg"></div>
+  <p class="file-help" data-ui="fileHelp"></p>
+<div id="fname" data-i="nofile"></div>
+  <div id="msg" role="alert"></div>
 </div>
-
-<div class="panel">
-  <canvas id="wave"></canvas>
+<div class="panel playback-panel">
+  <h2 data-ui="playback"></h2>
+<div class="wave-container"><canvas id="wave" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" data-ui-label="seek"></canvas><div id="waveEmpty" class="wave-empty" data-ui="waveEmpty"></div></div>
   <div class="times"><span id="cur">0:00.0</span><span id="dur">0:00.0</span></div>
   <button id="play" class="accent" disabled data-i="play">Play</button>
   <div class="row" style="margin-top:8px">
@@ -74,29 +77,31 @@ footer a{color:var(--muted)}
     <button id="fwd" class="fix" disabled>+5s</button>
   </div>
 </div>
-
-<div class="panel">
+<div class="panel volume-panel">
+  <h2 data-i="volume">Volume</h2>
+  <input type="range" id="vol" data-ui-label="volume" min="0" max="100" value="90">
+  <div class="mini" data-i="silent"></div>
+</div>
+</div><div class="player-settings"><div class="panel">
   <h2 data-i="key">Key</h2>
   <div class="row">
-    <button class="step" id="kDn" aria-label="down">−</button>
+    <button class="step" id="kDn" data-ui-label="lower">−</button>
     <div class="big"><span id="kVal">0</span><small data-i="semi">semitones</small></div>
-    <button class="step" id="kUp" aria-label="up">＋</button>
+    <button class="step" id="kUp" data-ui-label="higher">＋</button>
     <button class="fix" style="padding:8px 10px" id="kRst" data-i="reset">Reset</button>
   </div>
   <div class="mini" id="kHint"></div>
 </div>
-
 <div class="panel">
   <h2 data-i="tempo">Tempo</h2>
   <div class="row">
-    <button class="step" id="tDn" aria-label="slower">−</button>
+    <button class="step" id="tDn" data-ui-label="slower">−</button>
     <div class="big"><span id="tVal">100</span>%<small data-i="speed">speed (key unchanged)</small></div>
-    <button class="step" id="tUp" aria-label="faster">＋</button>
+    <button class="step" id="tUp" data-ui-label="faster">＋</button>
     <button class="fix" style="padding:8px 10px" id="tRst" data-i="reset">Reset</button>
   </div>
-  <input type="range" id="tRange" min="50" max="130" step="5" value="100">
+  <input type="range" id="tRange" data-ui-label="tempo" min="50" max="130" step="5" value="100">
 </div>
-
 <div class="panel">
   <h2 data-i="loop">A–B loop</h2>
   <div class="ab">
@@ -115,21 +120,9 @@ footer a{color:var(--muted)}
   </div>
   <div class="mini" data-i="loopHelp"></div>
 </div>
-
-<div class="panel">
-  <h2 data-i="volume">Volume</h2>
-  <input type="range" id="vol" min="0" max="100" value="90">
-  <div class="mini" data-i="silent"></div>
-</div>
-
-<div class="panel">
-  <div class="links">
-    <a href="../analyzer/" data-i="toAnalyzer">Pitch analyzer</a>
-    <a href="../guide/" data-i="toGuide">Guide</a>
-    <a href="../" data-i="toHome">Home</a>
-  </div>
-</div>
-<footer>Perch Creative · audio is processed in your browser and never uploaded · SoundTouchJS (LGPL-2.1)</footer>
+</div></div>
+<p class="license-note">SoundTouchJS · LGPL-2.1</p>
+</main><footer class="site-footer"></footer>
 
 <script type="module">
 import { SoundTouch, SimpleFilter } from './soundtouch.js';
@@ -251,7 +244,7 @@ function setPlaying(p){
   playing=p; $('play').textContent=t(p?'pause':'play');
 }
 function applyLoop(){
-  if(!src) return;
+  if(!src||!buf){if(src)src.loop=null;return}
   const sr=buf.sampleRate;
   src.loop=(loopOn&&loopA!=null&&loopB!=null&&loopB-loopA>=0.2)?{a:Math.round(loopA*sr),b:Math.round(loopB*sr)}:null;
 }
@@ -302,18 +295,24 @@ $('file').onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
   $('msg').textContent=''; setPlaying(false);
   fileName=f.name; $('fname').textContent=t('decoding');
+  $('waveEmpty').hidden=false;
   ['play','restart','back','fwd','setA','setB'].forEach(i=>$(i).disabled=true);
   try{
     ensureCtx();
     const ab=await f.arrayBuffer();
     buf=await new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej); if(p&&p.catch)p.catch(rej)});
   }catch(err){
-    buf=null; $('fname').textContent=''; fileName='';
+    buf=null; peaks=null; $('fname').textContent=t('nofile'); fileName='';
+    $('dur').textContent=$('cur').textContent='0:00.0';
+    loopA=loopB=null; loopOn=false; refreshAB();
+    ['loopT','loopC','aM','aP','bM','bP'].forEach(id=>$(id).disabled=true);
+    cv.setAttribute('aria-valuemax','0'); cv.setAttribute('aria-valuenow','0'); draw();
     $('msg').textContent=t(/memory|alloc/i.test(String(err&&err.message))?'errBig':'errDecode'); return;
   }
   loopA=loopB=null; loopOn=false;
   buildGraph(); computePeaks();
   $('fname').textContent=fileName; $('dur').textContent=fmt(buf.duration);
+  $('waveEmpty').hidden=true; cv.setAttribute('aria-valuemax',buf.duration.toFixed(1));
   ['play','restart','back','fwd','setA','setB'].forEach(i=>$(i).disabled=false);
   refreshAB(); draw();
 };
@@ -328,15 +327,15 @@ function computePeaks(){
 }
 function draw(){
   const dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight;
-  if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
   g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
-  if(!buf||!peaks){g.fillStyle='#4a515d';g.fillRect(0,h/2-1,w,2);return}
+  if(!buf||!peaks)return;
   const dur=buf.duration;
-  if(loopA!=null){const x1=loopA/dur*w,x2=(loopB!=null?loopB:loopA)/dur*w;g.fillStyle=loopOn?'rgba(79,209,197,.25)':'rgba(246,173,85,.18)';g.fillRect(x1,0,Math.max(2,x2-x1),h)}
+  if(loopA!=null){const x1=loopA/dur*w,x2=(loopB!=null?loopB:loopA)/dur*w;g.fillStyle=loopOn?'rgba(49,88,213,.16)':'rgba(140,77,33,.12)';g.fillRect(x1,0,Math.max(2,x2-x1),h)}
   const pos=curSec()/dur*w, N=peaks.length;
-  for(let x=0;x<w;x++){const v=peaks[Math.min(N-1,Math.floor(x/w*N))];const bh=Math.max(1,v*(h-10));g.fillStyle=x<pos?'#4fd1c5':'#6b7788';g.fillRect(x,(h-bh)/2,1,bh)}
-  g.fillStyle='#fff';g.fillRect(pos-1,0,2,h);
-  g.fillStyle='#f6ad55';
+  for(let x=0;x<w;x++){const v=peaks[Math.min(N-1,Math.floor(x/w*N))];const bh=Math.max(1,v*(h-10));g.fillStyle=x<pos?'#3158d5':'#96a7ce';g.fillRect(x,(h-bh)/2,1,bh)}
+  g.fillStyle='#18243c';g.fillRect(pos-1,0,2,h);
+  g.fillStyle='#8c4d21';
   if(loopA!=null)g.fillRect(loopA/dur*w-1,0,2,h);
   if(loopB!=null)g.fillRect(loopB/dur*w-1,0,2,h);
 }
@@ -350,15 +349,22 @@ cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId
 cv.addEventListener('pointermove',e=>{if(drag)seekFromEvent(e)});
 cv.addEventListener('pointerup',()=>drag=false); cv.addEventListener('pointercancel',()=>drag=false);
 function tick(){
-  if(buf){$('cur').textContent=fmt(curSec());draw()}
+  if(buf){$('cur').textContent=fmt(curSec());cv.setAttribute('aria-valuenow',curSec().toFixed(1));draw()}
   requestAnimationFrame(tick);
 }
 addEventListener('resize',draw);
-document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='SELECT'&&e.target.tagName!=='INPUT'){e.preventDefault();$('play').click()}});
+cv.addEventListener('keydown',e=>{
+  if(!buf)return;
+  if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
+    e.preventDefault();seekTo(e.key==='Home'?0:e.key==='End'?buf.duration:Math.max(0,Math.min(buf.duration,curSec()+(e.key==='ArrowRight'?5:-5))));
+  }
+});
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.target.closest('button,a,select,input,textarea,[contenteditable]')){e.preventDefault();$('play').click()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&playing)wake()});
 
 applyI18n(); setKey(0); setTempo(100); refreshAB(); tick();
 window.__player={get src(){return src},get filter(){return filter},get st(){return st},setKey,setTempo,seekTo,curSec,get playing(){return playing}};
 </script>
+<script src="../ui.js"></script>
 </body>
 </html>

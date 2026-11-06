@@ -5,100 +5,61 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vocal Kit">
-<meta name="theme-color" content="#0a0c0f">
-<link rel="icon" href="data:,">
+<meta name="theme-color" content="#f5f7fb">
+<meta name="description" content="Find your range, practice in your key. Free vocal lesson tools that keep your audio on your device.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.png">
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="home.css">
 <title>Vocal Lesson Kit</title>
-<style>
-:root{--bg:#0a0c0f;--panel:#12151a;--panel2:#191d24;--line:#252a33;--text:#e8ebf0;--muted:#8891a1;--accent:#4fd1c5;--accent2:#f6ad55}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Noto Sans KR",system-ui,sans-serif}
-body{padding:env(safe-area-inset-top) 18px calc(env(safe-area-inset-bottom) + 32px);max-width:640px;margin:0 auto}
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-select{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px}
-h1{font-size:30px;line-height:1.2;margin:10px 0 6px;letter-spacing:-.01em}
-h1 span{color:var(--accent)}
-.lead{color:var(--muted);margin:0 0 22px}
-.card{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0}
-.card:active{background:#171b21}
-.card .t{font-size:19px;font-weight:700;display:flex;align-items:center;gap:10px}
-.card .t i{font-style:normal;font-size:22px}
-.card p{margin:6px 0 10px;color:var(--muted);font-size:15px}
-.go{color:var(--accent);font-weight:700;font-size:15px}
-.card.pc .go{color:var(--accent2)}
-.tip{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:22px 0;font-size:14px;color:var(--muted)}
-.tip b{color:var(--text)}
-footer{color:#4a515d;font-size:12px;text-align:center;margin-top:26px}
-footer a{color:var(--muted)}
-[data-l]{display:none}
-html[lang=ko] [data-l=ko],html[lang=ja] [data-l=ja],html[lang=en] [data-l=en]{display:block}
-html[lang=ko] span[data-l=ko],html[lang=ja] span[data-l=ja],html[lang=en] span[data-l=en]{display:inline}
-</style>
 </head>
-<body>
-<header>
-  <span style="color:var(--muted);font-size:13px">Perch Creative</span>
-  <select id="lang" aria-label="Language"><option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option></select>
-</header>
-
-<h1>Vocal <span>Lesson Kit</span></h1>
-<p class="lead">
-  <span data-l="ko">보컬 레슨용 도구 모음 — 음정 분석, 연습 플레이어, 가이드. 설치 없이 브라우저에서 바로 쓸 수 있어요.</span>
-  <span data-l="ja">ボーカルレッスン用ツール集 — 音程分析、練習プレーヤー、ガイド。インストール不要、ブラウザですぐ使えます。</span>
-  <span data-l="en">Tools for vocal lessons — pitch analyzer, practice player and a guide. Nothing to install; it runs right in the browser.</span>
-</p>
-
-<a class="card" href="analyzer/">
-  <div class="t"><i>🎤</i>
-    <span data-l="ko">음정 분석기</span><span data-l="ja">音程アナライザー</span><span data-l="en">Pitch analyzer</span></div>
-  <p><span data-l="ko">마이크로 목소리를 실시간 분석해 음·센트·음역을 보여줘요. 남녀 목소리 모두 쓸 수 있는 판정 모드, 녹음, 메트로놈 포함.</span>
-     <span data-l="ja">マイクで声をリアルタイム分析し、音名・セント・音域を表示。男女どちらの声にも使える判定モード、録音、メトロノーム付き。</span>
-     <span data-l="en">Analyses your voice live from the mic: note, cents and range. Includes a judge mode for male and female voices, recording and a metronome.</span></p>
-  <span class="go"><span data-l="ko">열기 →</span><span data-l="ja">開く →</span><span data-l="en">Open →</span></span>
-</a>
-
-<a class="card" href="player/">
-  <div class="t"><i>🎧</i>
-    <span data-l="ko">연습 플레이어</span><span data-l="ja">練習プレーヤー</span><span data-l="en">Practice player</span></div>
-  <p><span data-l="ko">음원을 열고 키(±12반음)와 템포를 바꾸고, 어려운 구간을 A–B로 반복해서 연습해요.</span>
-     <span data-l="ja">音源を開いて、キー(±12半音)とテンポを変え、難しい区間をA–Bで繰り返して練習できます。</span>
-     <span data-l="en">Open a song, change the key (±12 semitones) and tempo, and loop a tricky section with A–B repeat.</span></p>
-  <span class="go"><span data-l="ko">열기 →</span><span data-l="ja">開く →</span><span data-l="en">Open →</span></span>
-</a>
-
-<a class="card" href="guide/">
-  <div class="t"><i>📖</i>
-    <span data-l="ko">가이드</span><span data-l="ja">ガイド</span><span data-l="en">Guide</span></div>
-  <p><span data-l="ko">처음 쓰는 방법, iPhone 홈 화면에 추가하기, 레슨 활용 아이디어, 문제 해결.</span>
-     <span data-l="ja">使い始め方、iPhoneのホーム画面への追加、レッスンでの活用アイデア、困ったときは。</span>
-     <span data-l="en">Getting started, adding to the iPhone Home Screen, lesson ideas and troubleshooting.</span></p>
-  <span class="go"><span data-l="ko">읽기 →</span><span data-l="ja">読む →</span><span data-l="en">Read →</span></span>
-</a>
-
-<a class="card pc" href="https://github.com/ddossss/vocal-lesson-kit">
-  <div class="t"><i>💻</i> MR Studio <small style="color:var(--muted);font-weight:400;font-size:13px">(PC)</small></div>
-  <p><span data-l="ko">곡에서 보컬을 지워 MR(반주)을 만드는 PC 프로그램 — 키·템포·구간 지정. 만든 MR은 연습 플레이어에서 열 수 있어요.</span>
-     <span data-l="ja">曲からボーカルを消してカラオケ音源を作るPC用プログラム — キー・テンポ・区間指定。作った音源は練習プレーヤーで開けます。</span>
-     <span data-l="en">A PC program that removes vocals from a song to make an instrumental — with key, tempo and section. Open the result in the practice player.</span></p>
-  <span class="go"><span data-l="ko">GitHub에서 보기 →</span><span data-l="ja">GitHubで見る →</span><span data-l="en">View on GitHub →</span></span>
-</a>
-
-<div class="tip">
-  <div data-l="ko"><b>iPhone이라면</b> Safari로 열고 공유 버튼 → “홈 화면에 추가”. 앱처럼 바로 열 수 있어요. 마이크는 Safari에서 허용해 주세요.</div>
-  <div data-l="ja"><b>iPhoneの場合</b>はSafariで開き、共有ボタン →「ホーム画面に追加」。アプリのようにすぐ開けます。マイクはSafariで許可してください。</div>
-  <div data-l="en"><b>On iPhone</b>, open it in Safari, tap Share → “Add to Home Screen”. It then opens like an app. Allow the microphone in Safari.</div>
+<body data-page="home">
+<select id="lang" aria-label="Language"><option value="ko">한국어</option><option value="ja">日本語</option><option value="en">English</option></select>
+<main id="main" class="home-main" tabindex="-1">
+<section class="home-intro">
+<div class="intro-copy">
+<p class="intro-note"><span class="small-signal" aria-hidden="true"></span><span data-l="ko">목소리에 집중하는 시간</span><span data-l="ja">自分の声に向き合う時間</span><span data-l="en">A little room for your voice</span></p>
+<h1><span data-l="ko">나의 목소리로,<br>더 나다운 노래.</span><span data-l="ja">自分の声で、<br>自分らしい歌を。</span><span data-l="en">Your voice.<br>Your own rhythm.</span></h1>
+<p class="intro-description"><span data-l="ko">음정을 확인하고, 나에게 맞는 키로 연습하세요.<br>매일의 보컬 연습에 필요한 도구를 한곳에.</span><span data-l="ja">音程を確かめて、自分に合うキーで練習。<br>毎日のボーカル練習に必要なツールを、ひとつに。</span><span data-l="en">Find your pitch. Practice in your key.<br>Your everyday vocal tools, together in one place.</span></p>
+<div class="intro-benefits"><span data-l="ko">설치 없이 바로 사용 · 회원가입 없이 무료</span><span data-l="ja">インストール不要 · 登録なしで無料</span><span data-l="en">No installation · No sign-up · Free to use</span></div>
 </div>
-
-<footer>Perch Creative · <span data-l="ko">음성은 기기 안에서만 처리되며 업로드되지 않아요</span><span data-l="ja">音声は端末内でのみ処理され、アップロードされません</span><span data-l="en">audio stays on your device and is never uploaded</span></footer>
-
+<div class="voice-art" aria-hidden="true">
+<svg viewBox="0 0 440 240" fill="none"><path d="M0 60h440M0 100h440M0 140h440M0 180h440" stroke="#dce3f0"/><path d="M0 120h30c12 0 12-15 20-15s9 30 17 30 10-61 19-61 10 92 20 92 12-122 22-122 10 152 20 152 12-175 23-175 11 198 22 198 12-185 23-185 11 166 22 166 10-131 20-131 10 95 20 95 10-59 20-59 8 35 18 35 8-25 18-25 9 5 18 5h68" stroke="#3158d5" stroke-width="2.5" stroke-linecap="round"/><circle cx="193" cy="120" r="45" fill="#f5f7fb" stroke="#c6d2ef"/><path d="M179 133v-32l28-5v31m-28-20 28-5" stroke="#3158d5" stroke-width="2.5"/><ellipse cx="173" cy="134" rx="7" ry="5" fill="#3158d5" transform="rotate(-20 173 134)"/><ellipse cx="201" cy="128" rx="7" ry="5" fill="#3158d5" transform="rotate(-20 201 128)"/></svg>
+</div>
+</section>
+<section class="tool-section" aria-labelledby="tools-heading">
+<div class="section-heading"><h2 id="tools-heading"><span data-l="ko">오늘의 연습을 시작하세요</span><span data-l="ja">今日の練習を始めましょう</span><span data-l="en">Make room for practice</span></h2><span data-ui="local"></span></div>
+<div class="primary-tools">
+<a class="tool-card pitch-card" href="analyzer/">
+<div class="tool-copy"><div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0014 0v-2M12 19v3m-4 0h8"/></svg></div>
+<h3><span data-l="ko">음정 분석기</span><span data-l="ja">音程アナライザー</span><span data-l="en">Pitch analyzer</span></h3><p><span data-l="ko">지금 부르는 음을 눈으로 확인하세요.<br>내 음역을 찾고, 음정을 더 정확하게.</span><span data-l="ja">今、歌っている音を目で確認。<br>自分の音域を知り、音程をもっと正確に。</span><span data-l="en">See the note you’re singing.<br>Know your range. Fine-tune your pitch.</span></p>
+<div class="tool-features"><span data-l="ko">실시간 음정 · 음역 기록 · 녹음</span><span data-l="ja">リアルタイム音程 · 音域記録 · 録音</span><span data-l="en">Live pitch · Vocal range · Recording</span></div>
+<span class="tool-action"><span data-l="ko">음정 확인하기</span><span data-l="ja">音程をチェック</span><span data-l="en">Check your pitch</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span></div>
+<div class="pitch-preview" aria-hidden="true"><div class="preview-label"><span data-l="ko">이렇게 보여요</span><span data-l="ja">表示イメージ</span><span data-l="en">Display preview</span><span class="preview-dot"></span></div><div class="preview-note">A<span>3</span></div><div class="preview-hz">220.0 <small>Hz</small></div><div class="preview-meter"><i></i><b></b></div><div class="preview-ticks"><span>−50</span><span>0</span><span>+50</span></div><div class="preview-caption"><span data-l="ko">내 목소리의 높이를 한눈에</span><span data-l="ja">声の高さを、ひと目で</span><span data-l="en">Your pitch, at a glance</span></div></div>
+</a>
+<a class="tool-card practice-card" href="player/">
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="12" width="5" height="9" rx="2"/><rect x="16" y="12" width="5" height="9" rx="2"/></svg></div><h3><span data-l="ko">연습 플레이어</span><span data-l="ja">練習プレーヤー</span><span data-l="en">Practice player</span></h3><p><span data-l="ko">내 목소리에 맞는 키와 속도로.<br>어려운 구간은 익숙해질 때까지 반복하세요.</span><span data-l="ja">自分の声に合うキーとテンポで。<br>難しいところは、慣れるまで繰り返し。</span><span data-l="en">Your song, at your pace.<br>Loop the tricky parts until they feel natural.</span></p>
+<div class="player-preview" aria-hidden="true"><span>−</span><div>♩<span class="preview-bars"><i style="--h:12px"></i><i style="--h:20px"></i><i style="--h:30px"></i><i style="--h:16px"></i><i style="--h:26px"></i><i style="--h:38px"></i><i style="--h:22px"></i><i style="--h:34px"></i><i style="--h:48px"></i><i style="--h:30px"></i><i style="--h:18px"></i><i style="--h:38px"></i><i style="--h:26px"></i><i style="--h:16px"></i><i style="--h:28px"></i><i style="--h:20px"></i><i style="--h:12px"></i></span></div><span>＋</span></div>
+<div class="tool-features"><span data-l="ko">키 조절 · 템포 변경 · 구간 반복</span><span data-l="ja">キー調整 · テンポ変更 · 区間リピート</span><span data-l="en">Change key · Adjust tempo · A–B loop</span></div><span class="tool-action"><span data-l="ko">곡 연습하기</span><span data-l="ja">曲を練習する</span><span data-l="en">Practice a song</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span>
+</a>
+</div>
+</section>
+<section class="support-tools" aria-label="More tools">
+<a class="support-card" href="guide/"><span class="support-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v16M12 5C8 2 3 3 2 4v15c4-2 7-1 10 2 3-3 6-4 10-2V4c-1-1-6-2-10 1Z"/></svg></span><div><h3><span data-l="ko">처음이라면, 사용 가이드</span><span data-l="ja">はじめての方へ</span><span data-l="en">A good place to start</span></h3><p><span data-l="ko">시작하는 방법부터 레슨 활용 팁까지.</span><span data-l="ja">使い始め方から、レッスンのヒントまで。</span><span data-l="en">Getting started, lesson ideas and a little help.</span></p></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+<a class="support-card" href="https://github.com/ddossss/vocal-lesson-kit#mr-studio-pc"><span class="support-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 22h8m-4-5v5"/></svg></span><div><h3>MR Studio <span class="desktop-tag">PC / Mac</span></h3><p><span data-l="ko">보컬을 제거하고 나만의 반주를 만드세요.</span><span data-l="ja">ボーカルを除去して、自分だけの伴奏に。</span><span data-l="en">Remove vocals. Make your own backing track.</span></p></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+</section>
+<div class="home-tip"><span class="tip-symbol" aria-hidden="true">＋</span><p><span data-l="ko"><b>홈 화면에 두고, 매일 가볍게.</b> iPhone Safari에서 공유 → ‘홈 화면에 추가’를 눌러보세요.</span><span data-l="ja"><b>ホーム画面から、毎日の練習へ。</b> iPhoneのSafariで共有 →「ホーム画面に追加」。</span><span data-l="en"><b>Your daily practice, one tap away.</b> In iPhone Safari, tap Share → Add to Home Screen.</span></p></div>
+</main>
+<footer class="site-footer"></footer>
 <script>
-(function(){
-  var L=['ko','ja','en'],s='';try{s=localStorage.getItem('va_lang')||''}catch(e){}
-  if(L.indexOf(s)<0){var n=(navigator.language||'en').slice(0,2);s=L.indexOf(n)>=0?n:'en'}
-  var sel=document.getElementById('lang');
-  function set(l){document.documentElement.lang=l;sel.value=l;try{localStorage.setItem('va_lang',l)}catch(e){}}
-  sel.onchange=function(){set(sel.value)};set(s);
+(() => {
+ const langs=['ko','ja','en'];let lang='';try{lang=localStorage.getItem('va_lang')||''}catch(e){}
+ if(!langs.includes(lang)){const n=(navigator.language||'en').slice(0,2);lang=langs.includes(n)?n:'en'}
+ const select=document.getElementById('lang');
+ function set(l){document.documentElement.lang=l;select.value=l;try{localStorage.setItem('va_lang',l)}catch(e){}}
+ select.onchange=()=>set(select.value);set(lang);
 })();
 </script>
+<script src="ui.js"></script>
 </body>
 </html>

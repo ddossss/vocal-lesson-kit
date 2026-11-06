@@ -201,79 +201,67 @@ def tempo_view(p, lang="ko"):
 
 
 def step(n, title, hint=""):
-    return f'<p class="step">STEP {n}<b>{title}</b></p>' + (f'<p class="hint">{hint}</p>' if hint else "")
+    return f'<p class="step"><span class="step-number">{n}</span><b>{title}</b></p>' + (f'<p class="hint">{hint}</p>' if hint else "")
 
 
 def hero(lang):
-    return f'<div id="hero"><h1>MR <span>Studio</span></h1><p>{tr(lang, "sub")}</p></div>'
+    return f'<div id="hero"><a class="kit-link" href="https://ddossss.github.io/vocal-lesson-kit/">Vocal Lesson Kit</a><h1>MR Studio</h1><p>{tr(lang, "sub")}</p></div>'
 
 
 THEME = gr.themes.Base(
-    primary_hue=gr.themes.colors.orange, neutral_hue=gr.themes.colors.zinc, radius_size="lg",
+    primary_hue=gr.themes.colors.blue, neutral_hue=gr.themes.colors.slate, radius_size="lg",
     font=[gr.themes.GoogleFont("Noto Sans KR"), gr.themes.GoogleFont("Noto Sans JP"), "Malgun Gothic", "Yu Gothic UI", "sans-serif"],
-)
+).set(body_background_fill="#f5f7fb", body_text_color="#18243c")
 CSS = """
-:root, .dark { --accent: #ff6b35; --accent-2: #ff9a5c; --panel: #15171d; --line: #262932; --muted: #8b90a0; }
-html, body { background: radial-gradient(1200px 520px at 20% -8%, #2b1a11 0%, #0c0d11 60%) fixed #0c0d11 !important; }
+:root, .dark { --accent: #3158d5; --panel: #fff; --line: #dce2ec; --muted: #5e6b82; }
+html, body { background: #f5f7fb !important; }
 .gradio-container, .gradio-container .main, .gradio-container .wrap.contain { background: transparent !important; }
-.gradio-container { max-width: 1120px !important; margin: 0 auto !important; }
+.gradio-container { max-width: 1180px !important; margin: 0 auto !important; padding: 24px !important; }
 footer { display: none !important; }
-
-#hero { padding: 28px 4px 8px; }
-#hero h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: #f4f4f6; }
-#hero h1 span { color: var(--accent); }
-#hero p { color: var(--muted); margin: 6px 0 0; font-size: 15px; }
-
-.card { background: var(--panel) !important; border: 1px solid var(--line) !important; border-radius: 18px !important;
-        padding: 18px !important; gap: 12px !important; }
-.step { font-size: 13px; font-weight: 700; letter-spacing: .04em; color: var(--accent); margin: 0 0 2px; }
-.step b { color: #eceef3; font-size: 16px; margin-left: 6px; letter-spacing: 0; }
-.hint { color: var(--muted); font-size: 13px; margin: 0; }
-
-/* 파트 = 알약 토글 */
+#hero { padding: 0 0 24px; }
+#studio-language { flex: 0 0 170px !important; align-self: flex-start; }
+@media (min-width: 900px) { #preview-sidebar { position: sticky; top: 24px; align-self: flex-start; } }
+.kit-link { display: inline-block; color: #3158d5 !important; font-size: 13px; font-weight: 650; text-decoration: none; margin-bottom: 24px; }
+#hero h1 { font-size: 42px; font-weight: 750; letter-spacing: -1.5px; margin: 0; color: #18243c; }
+#hero p { color: var(--muted); margin: 10px 0 0; font-size: 15px; line-height: 1.8; }
+.card { background: var(--panel) !important; border: 1px solid var(--line) !important; border-radius: 18px !important; padding: 24px !important; gap: 14px !important; }
+.step { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; }
+.step-number { display: inline-grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; background: #edf1fc; color: var(--accent); font-size: 12px; font-weight: 700; }
+.step b { color: #18243c; font-size: 16px; font-weight: 650; }
+.hint { color: var(--muted); font-size: 13px; margin: 0; line-height: 1.7; }
 #parts .wrap { gap: 8px !important; }
-#parts label { border: 1px solid var(--line) !important; background: #1c1f27 !important; border-radius: 999px !important;
-               padding: 8px 16px !important; transition: all .15s; color: var(--muted) !important; cursor: pointer; }
-#parts label input { display: none !important; }
-#parts label:has(input:checked) { background: rgba(255,107,53,.14) !important; border-color: var(--accent) !important; color: #fff !important; }
-#parts label:has(input:checked)::before { content: "●"; color: var(--accent); margin-right: 6px; font-size: 10px; }
-#parts label:not(:has(input:checked)) span { text-decoration: line-through; opacity: .7; }
-
-/* 키 − 값 + */
-.keyrow { align-items: center !important; justify-content: center !important; gap: 20px !important; }
-.keyrow button { font-size: 28px !important; font-weight: 700; height: 64px; width: 72px !important; min-width: 72px !important; flex: 0 0 72px !important; border-radius: 16px !important;
-                 background: #1c1f27 !important; border: 1px solid var(--line) !important; color: #eceef3 !important; }
-.keyrow button:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
-.keyval { text-align: center; flex: 0 0 140px !important; }
-.key-val { font-size: 40px; font-weight: 800; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.key-val.txt { font-size: 22px; line-height: 1.5; font-weight: 700; }
+#parts label { border: 1px solid var(--line) !important; background: #f7f9fc !important; border-radius: 10px !important; padding: 10px 14px !important; color: var(--muted) !important; cursor: pointer; min-height: 44px; }
+#parts label:has(input:checked) { background: #edf1fc !important; border-color: #98ace8 !important; color: #2548bc !important; }
+#parts label input { accent-color: var(--accent); }
+#parts label:focus-within { outline: 3px solid #3158d5; outline-offset: 3px; }
+.keyrow { align-items: center !important; justify-content: center !important; gap: 16px !important; padding: 10px 0; }
+.keyrow button { font-size: 26px !important; font-weight: 500; height: 54px; width: 54px !important; min-width: 54px !important; flex: 0 0 54px !important; border-radius: 50% !important; background: #f2f5fb !important; border: 1px solid var(--line) !important; color: #3158d5 !important; }
+.keyrow button:hover { background: #e6ecfc !important; border-color: var(--accent) !important; }
+.keyval { text-align: center; flex: 0 1 160px !important; min-width: 100px !important; }
+.key-val { font-size: 40px; font-weight: 650; color: #18243c; line-height: 1.25; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.key-val.txt { font-size: 22px; line-height: 1.5; font-weight: 650; letter-spacing: -.5px; }
 .key-sub { font-size: 12px; color: var(--muted); }
-.key-lbl { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--accent); margin-bottom: 2px; }
-
-/* 버튼 */
-#listen { background: transparent !important; border: 1.5px solid var(--accent) !important; color: var(--accent) !important;
-          font-size: 16px !important; font-weight: 700; height: 52px; }
-#listen:hover { background: rgba(255,107,53,.1) !important; }
-#make { background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important; border: none !important; color: #1a0d05 !important;
-        font-size: 16px !important; font-weight: 800; height: 52px; box-shadow: 0 8px 24px rgba(255,107,53,.25); }
-
-/* 진행 막대 — 미리듣기 플레이어 위에 표시되므로 비어 있어도 높이 확보 */
-#player { min-height: 150px; border: 1px dashed var(--line) !important; border-radius: 14px !important; }
-.meta-text { display: none !important; }
-.progress-level-inner, .progress-text { color: #eceef3 !important; font-size: 13px !important; }
-.progress-bar-wrap { width: 85% !important; height: 10px !important; border: none !important; border-radius: 999px !important; background: #2a2d36 !important; }
-.progress-bar { background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important; border-radius: 999px !important; }
-.eta-bar { background: rgba(255,107,53,.12) !important; }
+.key-lbl { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+#listen { background: #edf1fc !important; border: 1px solid #c9d5f4 !important; color: var(--accent) !important; font-size: 15px !important; font-weight: 650; height: 52px; border-radius: 10px !important; }
+#listen:hover { background: #dfe7fb !important; }
+#make { background: var(--accent) !important; border: 0 !important; color: #fff !important; font-size: 15px !important; font-weight: 650; height: 52px; border-radius: 10px !important; }
+#make:hover { background: #2447bb !important; }
+#player { min-height: 160px; border: 1px dashed #b9c7e1 !important; border-radius: 12px !important; background: #f5f7fc !important; }
+.progress-level-inner, .progress-text { color: #384d76 !important; font-size: 13px !important; }
+.progress-bar-wrap { width: 85% !important; height: 8px !important; border: none !important; border-radius: 8px !important; background: #e2e8f3 !important; }
+.progress-bar { background: var(--accent) !important; border-radius: 8px !important; }
+.eta-bar { background: #edf1fc !important; }
+button:focus-visible, a:focus-visible { outline: 3px solid #3158d5 !important; outline-offset: 3px !important; }
+@media (max-width: 600px) { .gradio-container { padding: 16px !important; } .card { padding: 18px !important; } #hero h1 { font-size: 34px; } .keyrow { gap: 10px !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 """
-DARK = "() => { const u = new URL(location); if (u.searchParams.get('__theme') !== 'dark') { u.searchParams.set('__theme', 'dark'); location.replace(u); } }"
-
-DARK = "() => { const u = new URL(location); if (u.searchParams.get('__theme') !== 'dark') { u.searchParams.set('__theme', 'dark'); location.replace(u); } }"
+LIGHT = "() => { const u = new URL(location); if (u.searchParams.get('__theme') !== 'light') { u.searchParams.set('__theme', 'light'); location.replace(u); } }"
 
 with gr.Blocks(title="MR Studio") as demo:
     L = "ko"
     with gr.Row(equal_height=False):
         hero_html = gr.HTML(hero(L), scale=5)
-        lang = gr.Dropdown([(n, c) for c, n in LANGS.items()], value=L, label=tr(L, "lang"), interactive=True, scale=1, min_width=150)
+        lang = gr.Dropdown([(n, c) for c, n in LANGS.items()], value=L, label=tr(L, "lang"), interactive=True, scale=1, min_width=150, elem_id="studio-language")
     with gr.Row(equal_height=False):
         with gr.Column(scale=3):
             with gr.Column(elem_classes="card"):
@@ -300,7 +288,7 @@ with gr.Blocks(title="MR Studio") as demo:
                 with gr.Row():
                     start = gr.Textbox(label=tr(L, "start"), placeholder=tr(L, "ph_start"), max_lines=1)
                     end = gr.Textbox(label=tr(L, "end"), placeholder=tr(L, "ph_end"), max_lines=1)
-        with gr.Column(scale=2):
+        with gr.Column(scale=2, elem_id="preview-sidebar"):
             with gr.Column(elem_classes="card"):
                 h5 = gr.HTML(step(5, tr(L, "s5"), tr(L, "s5_hint")))
                 listen = gr.Button(tr(L, "listen"), elem_id="listen")
@@ -344,4 +332,4 @@ with gr.Blocks(title="MR Studio") as demo:
     }""")
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=True, theme=THEME, css=CSS, js=DARK)
+    demo.launch(inbrowser=True, theme=THEME, css=CSS, js=LIGHT)
